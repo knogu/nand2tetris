@@ -39,15 +39,15 @@ CHIP CPU {
         pc[15];          // address of next instruction
 
     PARTS:
-    // AorMの値の準備 todo: ALU出力とのMux
-    // Aの入力は、C命令でかつALUの出力をAに保存しないときは、正しくない状態
+    // A, Mの値の準備
+    // Aの入力は、C命令でかつALUの出力をAに保存しないときは、正しくない状態(それで良い)
     Not(in = instruction[15], out = updateAbyInst);
     Mux16(a = ALUout, b = instruction, sel = updateAbyInst, out = AregisterIn);
     Or(a = updateAbyInst, b = instruction[5], out = updateA);
     ARegister(in = AregisterIn, load = updateA, out = AregisterOut, out[0..14] = addressM);
     Mux16(a = AregisterOut, b = inM, sel = instruction[12], out = AorMout);
 
-    // Dの値の準備 todo: ALU出力周り
+    // Dの値の準備
     DRegister(in = ALUout, load = instruction[4], out = DregisterOut);
 
     // ALU
