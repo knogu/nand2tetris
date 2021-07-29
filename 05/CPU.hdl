@@ -39,5 +39,34 @@ CHIP CPU {
         pc[15];          // address of next instruction
 
     PARTS:
-    // Put your code here:
+    // AorMの値の準備 todo: ALU出力とのMux
+    // Aの入力は、C命令でかつALUの出力をAに保存しないときは、正しくない状態
+    Not(in = instruction[15], out = updateAbyInst);
+    Mux16(a = ALUout, b = instruction, sel = updateAbyInst, out = AregisterIn);
+    Or(a = updateAbyInst, b = instruction[5], out = updateA);
+    ARegister(in = AregisterIn, load = updateA, out = AregisterOut, out[0..14] = addressM);
+    Mux16(a = AregisterOut, b = inM, sel = instruction[12], out = AorMout);
+
+    // Dの値の準備 todo: ALU出力周り
+    DRegister(in = ALUout, load = instruction[4], out = DregisterOut);
+
+    // ALU
+    ALU(x = DregisterOut, y = AorMout, zx = instruction[11], nx = instruction[10], zy = instruction[9], ny = instruction[8], f = instruction[7], no = instruction[6], out = ALUout, out = outM, zr = ALUoutIsZero, ng = ALUoutIsMinus);
+
+    // writeM
+    And(a = instruction[15], b = instruction[3], out = writeM);
+
+    // PCのjumpフラグの作成
+    And(a = ALUoutIsMinus, b = instruction[2], out = jump1);
+    And(a = ALUoutIsZero, b = instruction[1], out = jump2);
+    Not(in = ALUoutIsMinus, out = ALUoutIsNotMinus);
+    Not(in = ALUoutIsZero, out = ALUoutIsNotZero);
+    And(a = ALUoutIsNotMinus, b = ALUoutIsNotZero, out = ALUoutIsPlus);
+    And(a = ALUoutIsPlus, b = instruction[0], out = jump3);
+    Or(a = jump1, b = jump2, out = jumpTemp1);
+    Or(a = jumpTemp1, b = jump3, out = jumpTemp2);
+    And(a = jumpTemp2, b = instruction[15], out = jump);
+
+    // PC
+    PC(in = AregisterOut, load = jump, inc = true, reset = reset, out[0..14] = pc);
 }
