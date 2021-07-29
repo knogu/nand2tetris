@@ -48,7 +48,8 @@ CHIP CPU {
     Mux16(a = AregisterOut, b = inM, sel = instruction[12], out = AorMout);
 
     // Dの値の準備
-    DRegister(in = ALUout, load = instruction[4], out = DregisterOut);
+    And(a = instruction[4], b = instruction[15], out = loadD);
+    DRegister(in = ALUout, load = loadD, out = DregisterOut);
 
     // ALU
     ALU(x = DregisterOut, y = AorMout, zx = instruction[11], nx = instruction[10], zy = instruction[9], ny = instruction[8], f = instruction[7], no = instruction[6], out = ALUout, out = outM, zr = ALUoutIsZero, ng = ALUoutIsMinus);
