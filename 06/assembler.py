@@ -4,12 +4,12 @@ import sys
 class Parser:
     def __init__(self, file):
         with open(file) as f:
-            self.lines = []
+            self.__lines = []
             for s in f.readlines():
                 s = s.strip().replace(" ", "")
                 s = re.sub('//.*', '', s)
                 if s:
-                    self.lines.append(s)
+                    self.__lines.append(s)
         self.tmp_idx = 0
         self.eq_idx = -1
         self.semicolon_idx = -1
@@ -19,10 +19,10 @@ class Parser:
         self.reset_idx()
 
     def tmp_line(self):
-        return self.lines[self.tmp_idx]
+        return self.__lines[self.tmp_idx]
 
     def has_more_commands(self):
-        return self.tmp_idx + 1 < len(self.lines)
+        return self.tmp_idx + 1 < len(self.__lines)
     
     def reset_idx(self):
         self.eq_idx = -1
@@ -54,7 +54,7 @@ class Parser:
     def detect(self):
         # 省略されていてもparseできるようにするための初期値
         self.eq_idx = 0
-        self.semicolon_idx = len(self.lines[self.tmp_idx])
+        self.semicolon_idx = len(self.__lines[self.tmp_idx])
         for i, s in enumerate(self.tmp_line()):
             if s == "=":
                 self.eq_idx = i
@@ -97,7 +97,7 @@ class Parser:
 
 class Code:
     def __init__(self):
-        self.jump_table = {
+        self.__jump_table = {
             "": "000",
             "JGT": "001",
             "JEQ": "010",
@@ -107,7 +107,7 @@ class Code:
             "JLE": "110",
             "JMP": "111"
         }
-        self.comp_table = {
+        self.__comp_table = {
             "":"",
             "0":"101010",
             "1":"111111",
@@ -140,21 +140,20 @@ class Code:
         return "".join(result)
 
     def jump(self, mnemonic):
-        return self.jump_table[mnemonic]
+        return self.__jump_table[mnemonic]
 
     def comp(self, mnemonic):
         res = ["0"] * 7
         if "M" in mnemonic:
             res[0] = "1"
             mnemonic = mnemonic.replace("M", "A")
-        res[1:] = self.comp_table[mnemonic]
+        res[1:] = self.__comp_table[mnemonic]
         return "".join(res)
 
 class SymbolTable:
     def __init__(self):
         # スクリプト中の処理で２進数に変換する
-        # todo: 外側からのアクセスを禁止する
-        self.table = {
+        self.__table = {
             "SP": 0,
             "LCL": 1,
             "ARG": 2,
@@ -164,20 +163,20 @@ class SymbolTable:
             "KBD": 24576
         }
     def add_entry(self, symbol, address):
-        self.table[symbol] = address
+        self.__table[symbol] = address
 
     def contains(self, symbol):
         for i in range(16):
             if symbol == "R{}".format(i):
                 return True
-        return symbol in self.table
+        return symbol in self.__table
 
     def get_address(self, symbol):
         # R0-R15のチェック
         for i in range(16):
             if symbol == "R{}".format(i):
                 return i
-        return self.table[symbol]
+        return self.__table[symbol]
 
 path = sys.argv[1]
 parser = Parser(path)
@@ -185,12 +184,12 @@ code = Code()
 
 # 最初のパス
 table = SymbolTable()
-address = 0
+next_address = 0
 while True:
     if parser.command_type()[0] == "L":
-        table.add_entry(parser.symbol(), address)
+        table.add_entry(parser.symbol(), next_address)
     else:
-        address += 1
+        next_address += 1
     if not parser.has_more_commands():
         break
     parser.advance()
@@ -200,7 +199,6 @@ next_address = 16
 with open(path[:-3] + "hack", mode='w') as f:
     while True:
         res = ["0"] * 16
-        # print(parser.tmp_line())
         if parser.command_type()[0] == "A":
             symbol = parser.symbol()
             if symbol.isdigit():
