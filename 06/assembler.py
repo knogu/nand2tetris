@@ -1,6 +1,7 @@
 import re
 import sys
 
+# todo: C命令のパースを正規表現使って書き換え
 class Parser:
     def __init__(self, file):
         with open(file) as f:
