@@ -9,8 +9,8 @@ class Parser:
                 s = re.sub('^\s+$', '', s)
                 s = re.sub('//.*', '', s)
                 if len(s) > 1:
-                    print("added line", s)
-                    print("len(s)", len(s))
+                    # print("added line", s)
+                    # print("len(s)", len(s))
                     self.__lines.append(s)
         self.tmp_idx = 0
         self.words_ls = list(self.tmp_line().split())
@@ -44,7 +44,7 @@ class Parser:
         return self.words_ls[0]
 
     def arg1(self):
-        return self.words_ls[0]
+        return self.words_ls[1]
 
     def arg2(self):
         if not self.command_type() in ("C_PUSH", "C_POP", "C_FUNCTION", "C_RETURN"):

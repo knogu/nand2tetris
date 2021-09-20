@@ -7,9 +7,7 @@ parser = Parser(path)
 c_writer = CodeWriter(path)
 
 while True:
-    print('parser.tmp_line', parser.tmp_line())
-    if parser.command_type() == "C_PUSH":
-        print("parser.words_ls", parser.words_ls)
+    if parser.command_type() in ("C_PUSH", "C_POP"):
         c_writer.writePushPop(parser.command_type(), parser.arg1(), parser.arg2())
     if parser.command_type() == "C_ARITHMETIC":
         c_writer.writeArithmetic(parser.command())
