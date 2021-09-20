@@ -1,8 +1,11 @@
+import re
+
 class CodeWriter:
     def __init__(self, input_file_path):
-        # todo どんなファイル名にも対応できるように変更
-        self.filename = "StaticTest"
         self.f = open(input_file_path[:-3] + ".asm", mode='w')
+        m = re.match(r'.+/([^/]+).vm', input_file_path)
+        # 拡張子なしのファイル名(用途: static変数のシンボル)
+        self.vm_filename = m.groups()[0]
         self.label_cnt = 0
         self.incSP = [
             "@SP",
@@ -127,7 +130,7 @@ class CodeWriter:
                 ]
             elif segment == "static":
                 setPushedValueToD = [
-                    "@{}.{}".format(self.filename, index),
+                    "@{}.{}".format(self.vm_filename, index),
                     "D = M"
                 ]
             insertD = [
@@ -179,7 +182,7 @@ class CodeWriter:
                     "M = M - 1",
                     "A = M",
                     "D = M",
-                    "@{}.{}".format(self.filename, index),
+                    "@{}.{}".format(self.vm_filename, index),
                     "M = D",
                 ]
             self.f.write('\n'.join(code_lines))
