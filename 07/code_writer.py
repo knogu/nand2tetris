@@ -140,7 +140,6 @@ class CodeWriter:
             self.f.write('\n'.join(code_lines))
             self.f.write('\n')
         else:
-            print("pop called")
             if segment in ("local", "argument", "this", "that"):
                 setAddressToR14 = [
                     "@{}".format(index),
