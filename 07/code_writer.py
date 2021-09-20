@@ -37,7 +37,6 @@ class CodeWriter:
             "M = M-1",
             "A = M",
             "D = M",
-            "M = 0",    # いらないかも
         ] + setM
         
         if command == "add":
