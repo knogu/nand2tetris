@@ -1,14 +1,8 @@
 class CodeWriter:
     def __init__(self, input_file_path):
-        self.f = open(input_file_path[:-2] + "asm", mode='w')
-        # code_lines = [
-        #     "@256",
-        #     "D = A",
-        #     "@SP",
-        #     "M = D",
-        # ]
-        # self.f.write('\n'.join(code_lines))
-        # self.f.write('\n')
+        # todo どんなファイル名にも対応できるように変更
+        self.filename = "StaticTest"
+        self.f = open(input_file_path[:-3] + ".asm", mode='w')
         self.label_cnt = 0
         self.incSP = [
             "@SP",
@@ -131,6 +125,11 @@ class CodeWriter:
                     "@{}".format(self.__base[segment] + int(index)),
                     "D = M"
                 ]
+            elif segment == "static":
+                setPushedValueToD = [
+                    "@{}.{}".format(self.filename, index),
+                    "D = M"
+                ]
             insertD = [
                 "@SP",
                 "A = M",
@@ -140,22 +139,6 @@ class CodeWriter:
             self.f.write('\n'.join(code_lines))
             self.f.write('\n')
         else:
-            if segment in ("local", "argument", "this", "that"):
-                setAddressToR14 = [
-                    "@{}".format(index),
-                    "D = A",
-                    "@{}".format(self.__register_name[segment]),
-                    "D = M + D",
-                    "@R14",
-                    "M = D"
-                ]
-            elif segment in ("pointer", "temp"):
-                setAddressToR14 = [
-                    "@{}".format(self.__base[segment] + int(index)),
-                    "D = A",
-                    "@R14",
-                    "M = D",
-                ]
             popToR13 = [
                 "@SP",
                 "M = M - 1",
@@ -171,6 +154,33 @@ class CodeWriter:
                 "A = M",
                 "M = D",
             ]
-            code_lines = popToR13 + setAddressToR14 + setValue
+            if segment in ("local", "argument", "this", "that"):
+                setAddressToR14 = [
+                    "@{}".format(index),
+                    "D = A",
+                    "@{}".format(self.__register_name[segment]),
+                    "D = M + D",
+                    "@R14",
+                    "M = D"
+                ]
+                code_lines = popToR13 + setAddressToR14 + setValue
+            elif segment in ("pointer", "temp"):
+                setAddressToR14 = [
+                    "@{}".format(self.__base[segment] + int(index)),
+                    "D = A",
+                    "@R14",
+                    "M = D",
+                ]
+                code_lines = popToR13 + setAddressToR14 + setValue
+            elif segment == "static":
+                code_lines = [
+                    # Dにpopped valueを格納
+                    "@SP",
+                    "M = M - 1",
+                    "A = M",
+                    "D = M",
+                    "@{}.{}".format(self.filename, index),
+                    "M = D",
+                ]
             self.f.write('\n'.join(code_lines))
             self.f.write('\n')
