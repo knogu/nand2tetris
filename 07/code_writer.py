@@ -1,5 +1,6 @@
 import re
 
+
 class CodeWriter:
     def __init__(self, input_file_path):
         self.f = open(input_file_path[:-3] + ".asm", mode='w')
@@ -22,7 +23,7 @@ class CodeWriter:
             "pointer": 3,
             "temp": 5
         }
-    
+
     def close(self):
         self.f.close()
 
@@ -38,15 +39,19 @@ class CodeWriter:
             "A = M",
             "D = M",
         ] + setM
-        
+
         if command == "add":
-            code_lines = code_for_binary_before_comp + ["M = M + D"] + self.incSP
+            code_lines = code_for_binary_before_comp + \
+                ["M = M + D"] + self.incSP
         elif command == "sub":
-            code_lines = code_for_binary_before_comp + ["M = M - D"] + self.incSP
+            code_lines = code_for_binary_before_comp + \
+                ["M = M - D"] + self.incSP
         elif command == "and":
-            code_lines = code_for_binary_before_comp + ["M = M & D"] + self.incSP
+            code_lines = code_for_binary_before_comp + \
+                ["M = M & D"] + self.incSP
         elif command == "or":
-            code_lines = code_for_binary_before_comp + ["M = M | D"] + self.incSP
+            code_lines = code_for_binary_before_comp + \
+                ["M = M | D"] + self.incSP
         elif command == "eq":
             code_lines = code_for_binary_before_comp + [
                 "D = M - D",
@@ -102,8 +107,7 @@ class CodeWriter:
             code_lines = setM + ["M = !M"] + self.incSP
         elif command == "neg":
             code_lines = setM + ["M = -M"] + self.incSP
-        self.f.write('\n'.join(code_lines))
-        self.f.write('\n')
+        self.write_code_lines(code_lines)
 
     def writePushPop(self, command, segment, index):
         # segment が constant の場合のみを想定
@@ -184,5 +188,29 @@ class CodeWriter:
                     "@{}.{}".format(self.vm_filename, index),
                     "M = D",
                 ]
-            self.f.write('\n'.join(code_lines))
-            self.f.write('\n')
+            self.write_code_lines(code_lines)
+
+    def write_label(self, label):
+        self.write_code_lines([
+            "({})".format(label)
+        ])
+
+    def write_code_lines(self, code_lines):
+        self.f.write('\n'.join(code_lines))
+        self.f.write('\n')
+
+    def write_goto(self, label):
+        self.write_code_lines([
+            "@{}".format(label),
+            "0;JMP"
+        ])
+
+    def write_if(self, label):
+        self.write_code_lines([
+            "@SP",
+            "M=M-1",
+            "A=M",
+            "D=M",
+            "@{}".format(label),
+            "D;JNE"
+        ])
