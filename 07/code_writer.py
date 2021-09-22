@@ -273,22 +273,29 @@ class CodeWriter:
     def write_function(self, func_name, arg_count):
         self.write_label(func_name)
         self.__write_code_lines([
+            "@{}".format(arg_count),
+            "D = A",
             "@counter",
-            "M = arg_count",
-            "@(loop{})".format(self.label_cnt),
+            "M = D",
+            "(loop{})".format(self.label_cnt),
         ])
         self.__write_push_const(0)
         self.__write_code_lines([
             # ループに戻るか、終了
             "@counter",
-            "D = M - 1",
-            "@(loop{})".format(self.label_cnt),
-            "D;JGT"
+            "M = M - 1",
+            "D = M",
+            "@loop{}".format(self.label_cnt),
+            "D;JGT",
+            # デバッグ
+            "// finished func"
         ])
         self.label_cnt += 1
 
     def write_return(self):
-        self.__write_pop_default([
+        self.__write_code_lines([
+            # デバッグ
+            "// begin return",
             # 一時変数FRAMEにLCLの値を代入
             "@LCL",
             "D = M",
@@ -298,10 +305,11 @@ class CodeWriter:
         # 戻り値を移動
         self.__write_pop_default([
             "@ARG",
-            "A = M",
             "D = M",
         ])
-        self.__write_pop_default([
+        self.__write_code_lines([
+            # デバッグ
+            "// finished pop",
             # SPを戻す
             "@ARG",
             "D = M",
