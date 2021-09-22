@@ -57,8 +57,6 @@ D = M
 M = D
 @2
 D = A
-@THIS
-D = M + D
 @R14
 M = D
 @R13
@@ -81,8 +79,6 @@ D = M
 M = D
 @6
 D = A
-@THAT
-D = M + D
 @R14
 M = D
 @R13

@@ -18,6 +18,12 @@ while True:
         c_writer.write_goto(parser.arg1())
     elif parser.command_type() == "C_IF":
         c_writer.write_if(parser.arg1())
+    elif parser.command_type() == "C_CALL":
+        c_writer.write_call(parser.arg1(), parser.arg2())
+    elif parser.command_type() == "C_FUNCTION":
+        c_writer.write_function(parser.arg1(), parser.arg2())
+    elif parser.command_type() == "C_RETURN":
+        c_writer.write_return()
     if not parser.has_more_commands():
         break
     parser.advance()
