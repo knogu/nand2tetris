@@ -99,6 +99,11 @@ M = M+1
 D = M
 @FRAME1
 M = D
+@5
+A = D - A
+D = M
+@R15
+M = D
 @SP
 M = M - 1
 A = M
@@ -143,8 +148,7 @@ A = M
 D = M
 @LCL
 M = D
-@FRAME1
-M = M-1
+@R15
 A = M
 0;JMP
 // finished return

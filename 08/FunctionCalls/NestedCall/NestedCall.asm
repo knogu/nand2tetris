@@ -415,6 +415,11 @@ M = M+1
 D = M
 @FRAME3
 M = D
+@5
+A = D - A
+D = M
+@R15
+M = D
 @SP
 M = M - 1
 A = M
@@ -459,9 +464,7 @@ A = M
 D = M
 @LCL
 M = D
-@FRAME3
-M = M-1
-A = M
+@R15
 A = M
 0;JMP
 // finished return
@@ -543,6 +546,11 @@ M = M+1
 D = M
 @FRAME4
 M = D
+@5
+A = D - A
+D = M
+@R15
+M = D
 @SP
 M = M - 1
 A = M
@@ -587,9 +595,7 @@ A = M
 D = M
 @LCL
 M = D
-@FRAME4
-M = M-1
-A = M
+@R15
 A = M
 0;JMP
 // finished return

@@ -311,6 +311,12 @@ class CodeWriter:
             "D = M",
             "@FRAME{}".format(self.label_cnt),
             "M = D",
+            # リターンアドレスをR15に保存
+            "@{}".format(5),
+            "A = D - A",
+            "D = M",
+            "@R15",
+            "M = D",
         ])
         # 戻り値を移動
         self.__write_pop_default([
@@ -354,11 +360,13 @@ class CodeWriter:
             "@LCL",
             "M = D",
             # リターンアドレスへ移動
-            "@FRAME{}".format(self.label_cnt),
-            "M = M-1",
+            # "@FRAME{}".format(self.label_cnt),
+            # "M = M-1",
+            # "A = M",
+            # "A = M",
+            "@R15",
             "A = M",
-            "A = M",
-            "0;JMP"
+            "0;JMP",
         ])
         self.label_cnt += 1
         self.__write_code_lines(["// finished return"])  # デバッグ
