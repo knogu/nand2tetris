@@ -2,11 +2,11 @@ import re
 
 
 class CodeWriter:
-    def __init__(self, input_file_path):
-        self.f = open(input_file_path[:-3] + ".asm", mode='w')
-        m = re.match(r'.+/([^/]+).vm', input_file_path)
+    def __init__(self, input_file_path, output_filename):
+        m = re.match(r'(.+/)([^/]+).vm', input_file_path)
         # 拡張子なしのファイル名(用途: static変数のシンボル)
-        self.vm_filename = m.groups()[0]
+        self.vm_filename = m.groups()[1]
+        self.f = open(m.groups()[0] + output_filename + ".asm", mode='w')
         self.label_cnt = 0
         # pushに用いる
         self.insertD = [
@@ -242,11 +242,17 @@ class CodeWriter:
         code_lines = setPushedValueToD + self.insertD + self.incSP
         self.__write_code_lines(code_lines)
 
-    def write_call(self, func_name, arg_count):
-        # TODO: 引数をスタックにpush
-        return_address = self.label_cnt
-        self.__write_push_const(return_address)
+    def new_label(self):
+        used_count = self.label_cnt
         self.label_cnt += 1
+        return "label{}".format(used_count)
+
+    def write_call(self, func_name, arg_count):
+        print("write_call called {}".format(func_name))
+        # TODO: 引数をスタックにpush
+        self.__write_code_lines(["// begin call {}".format(func_name)])  # デバッグ
+        return_address = self.new_label()
+        self.__write_push_const(return_address)
 
         self.__write_push_memory_value("LCL")
         self.__write_push_memory_value("ARG")
@@ -257,7 +263,7 @@ class CodeWriter:
             # ARGを戻す
             "@SP",
             "D = M",
-            "@{}".format(arg_count+5),
+            "@{}".format(int(arg_count)+5),
             "D = D - A",
             "@ARG",
             "M = D",
@@ -269,28 +275,32 @@ class CodeWriter:
         ])
         self.write_goto(func_name)
         self.write_label(return_address)
+        self.__write_code_lines(
+            ["//finished call {}".format(func_name)])  # デバッグ
 
     def write_function(self, func_name, arg_count):
+        self.__write_code_lines(["//begin func {}".format(func_name)])  # デバッグ
         self.write_label(func_name)
-        self.__write_code_lines([
-            "@{}".format(arg_count),
-            "D = A",
-            "@counter",
-            "M = D",
-            "(loop{})".format(self.label_cnt),
-        ])
-        self.__write_push_const(0)
-        self.__write_code_lines([
-            # ループに戻るか、終了
-            "@counter",
-            "M = M - 1",
-            "D = M",
-            "@loop{}".format(self.label_cnt),
-            "D;JGT",
-            # デバッグ
-            "// finished func"
-        ])
-        self.label_cnt += 1
+        if int(arg_count) > 0:
+            self.__write_code_lines([
+                "@{}".format(arg_count),
+                "D = A",
+                "@counter",
+                "M = D",
+                "(loop{})".format(self.label_cnt),
+            ])
+            self.__write_push_const(0)
+            self.__write_code_lines([
+                # ループに戻るか、終了
+                "@counter",
+                "M = M - 1",
+                "D = M",
+                "@loop{}".format(self.label_cnt),
+                "D;JGT",
+                # デバッグ
+                "// finished func"
+            ])
+            self.label_cnt += 1
 
     def write_return(self):
         self.__write_code_lines([
@@ -347,6 +357,8 @@ class CodeWriter:
             "@FRAME{}".format(self.label_cnt),
             "M = M-1",
             "A = M",
+            "A = M",
             "0;JMP"
         ])
         self.label_cnt += 1
+        self.__write_code_lines(["// finished return"])  # デバッグ

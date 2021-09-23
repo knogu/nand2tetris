@@ -56,7 +56,7 @@ class Parser:
         return self.words_ls[1]
 
     def arg2(self):
-        if not self.command_type() in ("C_PUSH", "C_POP", "C_FUNCTION", "C_RETURN"):
+        if not self.command_type() in ("C_PUSH", "C_POP", "C_FUNCTION", "C_CALL"):
             print("arg2 can't be called when command type is {}",
                   self.command_type())
             raise

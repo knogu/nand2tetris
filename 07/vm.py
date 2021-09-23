@@ -4,7 +4,7 @@ import sys
 
 path = sys.argv[1]
 parser = Parser(path)
-c_writer = CodeWriter(path)
+c_writer = CodeWriter(path, sys.argv[2])
 
 while True:
     if parser.command_type() in ("C_PUSH", "C_POP"):

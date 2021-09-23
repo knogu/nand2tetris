@@ -1,3 +1,4 @@
+//begin func SimpleFunction.test
 (SimpleFunction.test)
 @2
 D = A
@@ -146,3 +147,4 @@ M = D
 M = M-1
 A = M
 0;JMP
+// finished return
