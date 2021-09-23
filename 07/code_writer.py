@@ -2,11 +2,12 @@ import re
 
 
 class CodeWriter:
-    def __init__(self, input_file_path, output_filename):
+    def __init__(self, input_file_path, output_filename, is_mode_a=True):
         m = re.match(r'(.+/)([^/]+).vm', input_file_path)
         # 拡張子なしのファイル名(用途: static変数のシンボル)
         self.vm_filename = m.groups()[1]
-        self.f = open(m.groups()[0] + output_filename + ".asm", mode='w')
+        self.f = open(m.groups()[0] + output_filename +
+                      ".asm", mode='a' if is_mode_a else 'w')
         self.label_cnt = 0
         # pushに用いる
         self.insertD = [
@@ -248,7 +249,6 @@ class CodeWriter:
         return "label{}".format(used_count)
 
     def write_call(self, func_name, arg_count):
-        print("write_call called {}".format(func_name))
         # TODO: 引数をスタックにpush
         self.__write_code_lines(["// begin call {}".format(func_name)])  # デバッグ
         return_address = self.new_label()
