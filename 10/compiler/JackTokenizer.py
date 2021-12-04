@@ -9,8 +9,6 @@ class JackTokenizer:
         s = self.remove_comments(s)
         s = re.sub('(^|(?<=\n))\t*\n', '', s)
         s = re.sub('\t', '', s)
-        print("comments and empty line removed")
-        print(s)
         self.s = s
         self.seperate()
     
@@ -19,10 +17,6 @@ class JackTokenizer:
         self.tokens = self.serparate_str()
         self.tokens = self.separete_by_space()
         self.tokens = self.seperate_by_symbols()
-        for token in self.tokens:
-            # if not token:
-            #     print("this token is empty")
-            print(token)
 
     def is_str(self, s):
         return s[0] == s[-1] == "\""
