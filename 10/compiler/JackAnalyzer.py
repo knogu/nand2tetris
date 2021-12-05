@@ -3,5 +3,5 @@ import sys
 
 path = sys.argv[1]
 tokenizer = JackTokenizer(path)
-# with open(path[:-4] + "xml", mode='w') as f:
-
+if sys.argv[2] == "-t":
+    tokenizer.create_token_xml(path[:-5] + "T_out" + "." + "xml")
