@@ -52,7 +52,6 @@ class ComplilationEngine:
         self.get_terminal(class_var_dec, self.tokenizer.TAG_IDENTIFIER)
         while self.tokenizer.token == ",":
             self.get_terminal(class_var_dec, self.tokenizer.TAG_SYMBOL)
-            # get varname
             self.get_terminal(class_var_dec, self.tokenizer.TAG_IDENTIFIER)
         if self.tokenizer.token != ";":
             raise Exception
@@ -60,9 +59,6 @@ class ComplilationEngine:
         return
 
     def output_xml(self, filepath, root=None):
-        print(root if root else self.root)
         tree = ET.ElementTree(root if root else self.root)
         ET.indent(tree, space="\t", level=0)
-        print("path:", filepath)
-        # ET.dump(root)
         tree.write(filepath, encoding="utf-8")

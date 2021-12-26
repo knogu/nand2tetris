@@ -4,8 +4,8 @@ import xml.etree.ElementTree as ET
 
 class JackTokenizer:
     SYMBOLS = {"{", "}", "(", ")", "[", "]", ".", ",", ";", "+", "-", "*", "/", "&", "|", "<", ">", "=", "~"}
-    KEYWORDS = {"class", "constructor", "function", "method", "field", "static", "var", "int", "char", "boolean",\
-        "void", "true", "false", "null", "this", "let", "do", "if", "else", "while", "return"}
+    KEYWORDS = {"class", "constructor", "function", "method", "field", "static", "var", "int", "char", "boolean",
+                "void", "true", "false", "null", "this", "let", "do", "if", "else", "while", "return"}
     TAG_KEYWORD = "keyword"
     TAG_SYMBOL = "symbol"
     TAG_IDENTIFIER = "identifier"
