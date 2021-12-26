@@ -1,14 +1,18 @@
 import re
 import xml.etree.ElementTree as ET
 
+
 class JackTokenizer:
     SYMBOLS = {"{", "}", "(", ")", "[", "]", ".", ",", ";", "+", "-", "*", "/", "&", "|", "<", ">", "=", "~"}
     KEYWORDS = {"class", "constructor", "function", "method", "field", "static", "var", "int", "char", "boolean",\
         "void", "true", "false", "null", "this", "let", "do", "if", "else", "while", "return"}
+    TAG_KEYWORD = "keyword"
+    TAG_SYMBOL = "symbol"
+    TAG_IDENTIFIER = "identifier"
+    TAG_INTEGER_CONST = "integerConstant"
+    TAG_STRING_CONST = "stringConstant"
 
-    def __init__(self, file):
-        with open(file) as f:
-            s = f.read()
+    def __init__(self, s):
         s = self.remove_comments(s)
         s = re.sub('(^|(?<=\n))\t*\n', '', s)
         s = re.sub('\t', '', s)
@@ -17,6 +21,12 @@ class JackTokenizer:
         self.token_i = 0
         self.token = self.tokens[self.token_i]
 
+    @classmethod
+    def construct_from_file(cls, file):
+        with open(file) as f:
+            s = f.read()
+        return cls(s)
+
     def has_more_tokens(self):
         return self.token_i+1 < len(self.tokens)
 
@@ -24,31 +34,17 @@ class JackTokenizer:
         self.token_i += 1
         self.token = self.tokens[self.token_i]
 
-    def token_type(self):
-        if self.token in self.KEYWORDS:
-            return "KEYWORD"
-        elif self.token in self.SYMBOLS:
-            return "SYMBOL"
-        elif re.fullmatch(r'\d+', self.token):
-            return "INT_CONST"
-        elif self.is_str(self.token):
-            return "STRING_CONST"
-        else:
-            return "IDENTIFIER"
-
     def token_tag(self):
-        if self.token_type() == "KEYWORD":
-            return "keyword"
-        elif self.token_type() == "SYMBOL":
-            return "symbol"
-        elif self.token_type() == "INT_CONST":
-            return "integerConstant"
-        elif self.token_type() == "STRING_CONST":
-            return "stringConstant"
-        elif self.token_type() == "IDENTIFIER":
-            return "identifier"
+        if self.token in self.KEYWORDS:
+            return self.TAG_KEYWORD
+        elif self.token in self.SYMBOLS:
+            return self.TAG_SYMBOL
+        elif re.fullmatch(r'\d+', self.token):
+            return self.TAG_INTEGER_CONST
+        elif self.is_str(self.token):
+            return self.TAG_STRING_CONST
         else:
-            raise
+            return self.TAG_IDENTIFIER
 
     def init_tokens(self):
         self.tokens = self.s.split("\n")
@@ -113,7 +109,7 @@ class JackTokenizer:
         root = ET.Element("tokens")
         while True:
             token_xml = ET.SubElement(root, self.token_tag())
-            if self.token_type() == "STRING_CONST":
+            if self.token_tag() == self.TAG_STRING_CONST:
                 token_xml.text = self.token[1:-1]
             else:
                 token_xml.text = self.token
@@ -123,3 +119,13 @@ class JackTokenizer:
         tree = ET.ElementTree(root)
         ET.indent(tree, space="\t", level=0)
         tree.write(filepath)
+
+    def read_token(self, advance=True):
+        '''
+        {"token": token, "token_tag": token_tag}を返す
+        advance がtrueの場合、取得後にトークンを進める
+        '''
+        ret = {"token": self.token, "tag": self.token_tag()}
+        if advance:
+            self.advance()
+        return ret

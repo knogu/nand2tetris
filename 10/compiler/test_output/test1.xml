@@ -1,0 +1,10 @@
+<root>
+    <classVarDec>
+        <keyword>static</keyword>
+        <keyword>int</keyword>
+        <identifier>a</identifier>
+        <symbol>,</symbol>
+        <identifier>b</identifier>
+        <symbol>;</symbol>
+    </classVarDec>
+</root>
