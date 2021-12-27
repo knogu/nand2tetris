@@ -14,10 +14,13 @@ class TestComplilationEngine(unittest.TestCase):
 
     def check(self, compiler, output_file, asserted_file):
         compiler.output_xml(output_file, self.root)
-        subprocess.run(["/Users/noguchikoutarou/nand2tetris/tools/TextComparer.sh",
-                        output_file,
-                        asserted_file
-                        ])
+        out = subprocess.check_output(["/Users/noguchikoutarou/nand2tetris/tools/TextComparer.sh",
+                                       output_file,
+                                       asserted_file
+                                       ])
+        self.assertEqual(b'Comparison ended successfully\n', out)
+        if b'Comparison ended successfully\n' != out:
+            print(out)
 
     def test_compile_class_var_dec(self):
         s = '''
@@ -31,6 +34,8 @@ class TestComplilationEngine(unittest.TestCase):
         fixture = [
             # integerConstant
             {"input": "333", "asserted_file": "test_output/term/assertion/integer_constant.xml"},
+            # stringConstant
+            {"input": "\"this is test 333\"", "asserted_file": "test_output/term/assertion/string_constant.xml"},
         ]
         for i, test in enumerate(fixture):
             compiler = self.set_up_compiler(test["input"])

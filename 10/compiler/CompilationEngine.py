@@ -68,6 +68,8 @@ class ComplilationEngine:
         read = self.tokenizer.read_token()
         if read["tag"] == self.tokenizer.TAG_INTEGER_CONST:
             self.add_xml_child(term, self.tokenizer.TAG_INTEGER_CONST, read["token"])
+        elif read["tag"] == self.tokenizer.TAG_STRING_CONST:
+            self.add_xml_child(term, self.tokenizer.TAG_STRING_CONST, read["token"][1:-1])
 
     def output_xml(self, filepath, root):
         tree = ET.ElementTree(root)
