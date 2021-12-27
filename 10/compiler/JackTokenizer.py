@@ -126,6 +126,6 @@ class JackTokenizer:
         advance がtrueの場合、取得後にトークンを進める
         '''
         ret = {"token": self.token, "tag": self.token_tag()}
-        if advance:
+        if advance and self.has_more_tokens():
             self.advance()
         return ret

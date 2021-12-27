@@ -58,7 +58,18 @@ class ComplilationEngine:
         self.get_terminal(class_var_dec, self.tokenizer.TAG_SYMBOL, advance=False)
         return
 
-    def output_xml(self, filepath, root=None):
-        tree = ET.ElementTree(root if root else self.root)
+    def compile_expression(self, root):
+        '''
+        compiled pattern) term (op term)*
+        '''
+
+    def compile_term(self, parent):
+        term = ET.SubElement(parent, "term")
+        read = self.tokenizer.read_token()
+        if read["tag"] == self.tokenizer.TAG_INTEGER_CONST:
+            self.add_xml_child(term, self.tokenizer.TAG_INTEGER_CONST, read["token"])
+
+    def output_xml(self, filepath, root):
+        tree = ET.ElementTree(root)
         ET.indent(tree, space="\t", level=0)
         tree.write(filepath, encoding="utf-8")
