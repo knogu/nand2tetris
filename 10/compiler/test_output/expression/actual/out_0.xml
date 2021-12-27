@@ -1,0 +1,7 @@
+<root>
+	<expression>
+		<term>
+			<stringConstant>string constant</stringConstant>
+		</term>
+	</expression>
+</root>

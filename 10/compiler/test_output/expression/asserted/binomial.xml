@@ -1,0 +1,11 @@
+<root>
+    <expression>
+        <term>
+            <identifier> i </identifier>
+        </term>
+        <symbol> | </symbol>
+        <term>
+            <identifier> j </identifier>
+        </term>
+    </expression>
+</root>

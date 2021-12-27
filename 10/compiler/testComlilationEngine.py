@@ -3,6 +3,7 @@ from CompilationEngine import ComplilationEngine
 from JackTokenizer import JackTokenizer
 import xml.etree.ElementTree as ET
 import subprocess
+import pathlib
 
 
 class TestComplilationEngine(unittest.TestCase):
@@ -14,9 +15,13 @@ class TestComplilationEngine(unittest.TestCase):
 
     def check(self, compiler, output_file, asserted_file):
         compiler.output_xml(output_file, self.root)
+        subprocess.run(["/Users/noguchikoutarou/nand2tetris/tools/TextComparer.sh",
+                        str(pathlib.Path(__file__).parent) + "/" + output_file,
+                        str(pathlib.Path(__file__).parent) + "/" + asserted_file
+                        ])
         out = subprocess.check_output(["/Users/noguchikoutarou/nand2tetris/tools/TextComparer.sh",
-                                       output_file,
-                                       asserted_file
+                                       str(pathlib.Path(__file__).parent) + "/" + output_file,
+                                       str(pathlib.Path(__file__).parent) + "/" + asserted_file
                                        ])
         self.assertEqual(b'Comparison ended successfully\n', out)
         if b'Comparison ended successfully\n' != out:
@@ -30,17 +35,34 @@ class TestComplilationEngine(unittest.TestCase):
         compiler.compile_class_var_dec(self.root)
         self.check(compiler, "test_compile_class_var_dec.xml", "test_output/test1.xml")
 
+    def test_compile_expression(self):
+        fixture = [
+            {"input": "\"string constant\"", "asserted_file": "test_output/expression/asserted/just_a_term.xml"},
+            {"input": "i | j", "asserted_file": "test_output/expression/asserted/binomial.xml"},
+            {"input": "(y + size) - 1", "asserted_file": "test_output/expression/asserted/trinomial.xml"},
+        ]
+        for i, test in enumerate(fixture):
+            compiler = self.set_up_compiler(test["input"])
+            compiler.compile_expression(self.root)
+            self.check(compiler, "/test_output/expression/actual/out_{}.xml".format(i), test["asserted_file"])
+
     def test_compile_term(self):
         fixture = [
             # integerConstant
             {"input": "333", "asserted_file": "test_output/term/assertion/integer_constant.xml"},
             # stringConstant
             {"input": "\"this is test 333\"", "asserted_file": "test_output/term/assertion/string_constant.xml"},
+            # keywordConstant
+            {"input": "null", "asserted_file": "test_output/term/assertion/keyword_constant.xml"},
+            # (expression)
+            {"input": "(333)", "asserted_file": "test_output/term/assertion/in_bracket.xml"},
+            # unaryOp term
+            {"input": "- j", "asserted_file": "test_output/term/assertion/unary_op.xml"}
         ]
         for i, test in enumerate(fixture):
             compiler = self.set_up_compiler(test["input"])
             compiler.compile_term(self.root)
-            self.check(compiler, "test_output/term/actual/integer_constant_{}.xml".format(i), test["asserted_file"])
+            self.check(compiler, "test_output/term/actual/out_{}.xml".format(i), test["asserted_file"])
 
 
 if __name__ == "__main__":

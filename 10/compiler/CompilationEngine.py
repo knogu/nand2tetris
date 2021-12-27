@@ -1,4 +1,6 @@
 import xml.etree.ElementTree as ET
+from const import OP
+import pathlib
 
 
 class ComplilationEngine:
@@ -26,7 +28,7 @@ class ComplilationEngine:
         root = ET.Element("class")
         self.root = root
         self.get_terminal(root, self.tokenizer.TAG_KEYWORD)
-        self.get_terminal(root, self.tokenizer.TAG_IDENTFIER, advance=True)
+        self.get_terminal(root, self.tokenizer.TAG_IDENTIFIER, advance=True)
         self.get_terminal(root, self.tokenizer.TAG_SYMBOL, advance=True)
         self.tokenizer.advance()
         while self.tokenizer.token in ("static", "field"):
@@ -58,10 +60,15 @@ class ComplilationEngine:
         self.get_terminal(class_var_dec, self.tokenizer.TAG_SYMBOL, advance=False)
         return
 
-    def compile_expression(self, root):
+    def compile_expression(self, parent):
         '''
         compiled pattern) term (op term)*
         '''
+        expression = ET.SubElement(parent, "expression")
+        self.compile_term(expression)
+        while self.tokenizer.read_token(advance=False)["token"] in OP:
+            self.add_xml_child(expression, self.tokenizer.TAG_SYMBOL, self.tokenizer.read_token()["token"])
+            self.compile_term(expression)
 
     def compile_term(self, parent):
         term = ET.SubElement(parent, "term")
@@ -70,8 +77,40 @@ class ComplilationEngine:
             self.add_xml_child(term, self.tokenizer.TAG_INTEGER_CONST, read["token"])
         elif read["tag"] == self.tokenizer.TAG_STRING_CONST:
             self.add_xml_child(term, self.tokenizer.TAG_STRING_CONST, read["token"][1:-1])
+        elif read["tag"] == self.tokenizer.TAG_KEYWORD:
+            if read["token"] not in ("true", "false", "null", "this"):
+                raise Exception
+            self.add_xml_child(term, self.tokenizer.TAG_KEYWORD, read["token"])
+        elif read["token"] == "(":
+            self.add_xml_child(term, self.tokenizer.TAG_SYMBOL, read["token"])
+            self.compile_expression(term)
+            read_latter = self.tokenizer.read_token()
+            if read_latter["token"] != ")":
+                raise Exception
+            self.add_xml_child(term, self.tokenizer.TAG_SYMBOL, read_latter["token"])
+        elif read["token"] in ("-", "~"):
+            self.add_xml_child(term, self.tokenizer.TAG_SYMBOL, read["token"])
+            self.compile_term(term)
+        # 以下の場合は先読みが必要
+        # ただし、最後のトークンだった場合は変数に決定
+        # 配列
+        elif self.tokenizer.has_more_tokens() and self.tokenizer.read_next_token()["token"] == "[":
+            self.add_xml_child(term, self.tokenizer.TAG_IDENTIFIER, read["token"])
+            self.add_xml_child(term, self.tokenizer.TAG_SYMBOL, read["token"])
+            self.compile_expression(term)
+            read_latter = self.tokenizer.read_token()
+            if read_latter["token"] == "]":
+                raise Exception
+            self.add_xml_child(term, self.tokenizer.TAG_SYMBOL, read_latter["token"])
+        # サブルーチン呼び出し
+        elif self.tokenizer.has_more_tokens() and self.tokenizer.read_next_token()["token"] in (".", "("):
+            pass
+        # 変数
+        else:
+            self.add_xml_child(term, self.tokenizer.TAG_IDENTIFIER, read["token"])
 
     def output_xml(self, filepath, root):
         tree = ET.ElementTree(root)
         ET.indent(tree, space="\t", level=0)
-        tree.write(filepath, encoding="utf-8")
+        path = str(pathlib.Path(__file__).parent) + "/" + filepath
+        tree.write(path, encoding="utf-8")

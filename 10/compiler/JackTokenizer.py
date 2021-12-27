@@ -34,6 +34,10 @@ class JackTokenizer:
         self.token_i += 1
         self.token = self.tokens[self.token_i]
 
+    def get_back(self):
+        self.token_i -= 1
+        self.token = self.tokens[self.token_i]
+
     def token_tag(self):
         if self.token in self.KEYWORDS:
             return self.TAG_KEYWORD
@@ -128,4 +132,16 @@ class JackTokenizer:
         ret = {"token": self.token, "tag": self.token_tag()}
         if advance and self.has_more_tokens():
             self.advance()
+        return ret
+
+    def read_next_token(self):
+        '''
+        現在のトークンの一つ先のトークンについて、{"token": token, "token_tag": token_tag}を返す
+        トークンを進める処理は行わない
+        '''
+        if not self.has_more_tokens():
+            raise Exception
+        self.advance()
+        ret = {"token": self.token, "tag": self.token_tag()}
+        self.get_back()
         return ret
