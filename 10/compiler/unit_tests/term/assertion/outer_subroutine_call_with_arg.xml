@@ -1,0 +1,22 @@
+<root>
+    <term>
+        <identifier> Keyboard </identifier>
+        <symbol> . </symbol>
+        <identifier> readInt </identifier>
+        <symbol> ( </symbol>
+        <expressionList>
+            <expression>
+                <term>
+                <stringConstant> HOW MANY NUMBERS?  </stringConstant>
+                </term>
+            </expression>
+            <symbol> , </symbol>
+            <expression>
+                <term>
+                <identifier> arg2 </identifier>
+                </term>
+            </expression>
+        </expressionList>
+        <symbol> ) </symbol>
+    </term>
+</root>

@@ -1,6 +1,7 @@
 import xml.etree.ElementTree as ET
 from const import OP
 import pathlib
+import fileinput
 
 
 class ComplilationEngine:
@@ -103,14 +104,44 @@ class ComplilationEngine:
                 raise Exception
             self.add_xml_child(term, self.tokenizer.TAG_SYMBOL, read_latter["token"])
         # サブルーチン呼び出し
-        elif self.tokenizer.read_token(advance=False)["token"] in (".", "("):
-            pass
+        elif self.tokenizer.has_more_tokens() and self.tokenizer.read_next_token()["token"] in (".", "("):
+            self.compile_subroutine_call(term)
         # 変数
         else:
-            self.add_xml_child(term, self.tokenizer.TAG_IDENTIFIER, read["token"])
+            self.add_xml_child(term, self.tokenizer.TAG_IDENTIFIER, self.tokenizer.read_token()["token"])
+
+    def compile_expression_list(self, parent):
+        # ↓呼び出し元で、expression_listの両側が()で閉じられてることに依存したロジック
+        expression_list = ET.SubElement(parent, "expressionList")
+        if self.tokenizer.read_token(advance=False)["token"] == ")":
+            return
+        while True:
+            self.compile_expression(expression_list)
+            if self.tokenizer.read_token(advance=False)["token"] == ")":
+                return
+            assert self.tokenizer.read_token(advance=False)["token"] == ","
+            self.add_xml_child(expression_list, self.tokenizer.TAG_SYMBOL, self.tokenizer.read_token()["token"])
+
+    def compile_subroutine_call(self, parent):
+        '''
+        <subRoutineCall>タグの出力はしない
+        '''
+        self.add_xml_child(parent, self.tokenizer.TAG_IDENTIFIER, self.tokenizer.read_token()["token"])
+        # 外部クラスの関数だった場合は追加
+        if self.tokenizer.read_token(advance=False)["token"] == ".":
+            self.add_xml_child(parent, self.tokenizer.TAG_SYMBOL, self.tokenizer.read_token()["token"])
+            self.add_xml_child(parent, self.tokenizer.TAG_IDENTIFIER, self.tokenizer.read_token()["token"])
+        assert self.tokenizer.read_token(advance=False)["token"] == "("
+        self.add_xml_child(parent, self.tokenizer.TAG_SYMBOL, self.tokenizer.read_token()["token"])
+        self.compile_expression_list(parent)
+        assert self.tokenizer.read_token(advance=False)["token"] == ")"
+        self.add_xml_child(parent, self.tokenizer.TAG_SYMBOL, self.tokenizer.read_token()["token"])
 
     def output_xml(self, filepath, root):
         tree = ET.ElementTree(root)
         ET.indent(tree, space="\t", level=0)
         path = str(pathlib.Path(__file__).parent) + "/" + filepath
-        tree.write(path, encoding="utf-8")
+        tree.write(path, encoding="utf-8", short_empty_elements=False)
+        # 空要素のタグ間に改行を入れる（nand2tetrisのツールでの比較のため）
+        for line in fileinput.input(path, inplace=True):
+            print(line.replace("></", ">\n</"), end='')

@@ -1,8 +1,11 @@
 <root>
 	<term>
-		<symbol>-</symbol>
-		<term>
-			<identifier>j</identifier>
-		</term>
+		<identifier>Keyboard</identifier>
+		<symbol>.</symbol>
+		<identifier>keyPressed</identifier>
+		<symbol>(</symbol>
+		<expressionList>
+</expressionList>
+		<symbol>)</symbol>
 	</term>
 </root>

@@ -58,6 +58,11 @@ class TestComplilationEngine(unittest.TestCase):
             {"input": "x", "asserted_file": "unit_tests/term/assertion/varname.xml"},
             # 配列: varname[expression]
             {"input": "a[2]", "asserted_file": "unit_tests/term/assertion/list.xml"},
+            # subroutineCall
+            {"input": "draw()", "asserted_file": "unit_tests/term/assertion/self_subroutine_call.xml"},
+            {"input": "Keyboard.keyPressed()", "asserted_file": "unit_tests/term/assertion/outer_subroutine_call.xml"},
+            {"input": "Keyboard.readInt(\"HOW MANY NUMBERS? \", arg2)",
+             "asserted_file": "unit_tests/term/assertion/outer_subroutine_call_with_arg.xml"},
             # (expression)
             {"input": "(333)", "asserted_file": "unit_tests/term/assertion/in_bracket.xml"},
             # unaryOp term

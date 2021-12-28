@@ -1,11 +1,9 @@
 <root>
 	<term>
+		<identifier>draw</identifier>
 		<symbol>(</symbol>
-		<expression>
-			<term>
-				<integerConstant>333</integerConstant>
-			</term>
-		</expression>
+		<expressionList>
+</expressionList>
 		<symbol>)</symbol>
 	</term>
 </root>

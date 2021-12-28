@@ -1,0 +1,9 @@
+<root>
+    <term>
+        <identifier> draw </identifier>
+        <symbol> ( </symbol>
+        <expressionList>
+        </expressionList>
+        <symbol> ) </symbol>
+    </term>
+</root>

@@ -1,0 +1,11 @@
+<root>
+    <term>
+        <identifier> Keyboard </identifier>
+        <symbol> . </symbol>
+        <identifier> keyPressed </identifier>
+        <symbol> ( </symbol>
+        <expressionList>
+        </expressionList>
+        <symbol> ) </symbol>
+    </term>
+</root>
