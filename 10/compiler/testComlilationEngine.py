@@ -15,14 +15,17 @@ class TestComplilationEngine(unittest.TestCase):
 
     def check(self, compiler, output_file, asserted_file):
         compiler.output_xml(output_file, self.root)
-        subprocess.run(["/Users/noguchikoutarou/nand2tetris/tools/TextComparer.sh",
-                        str(pathlib.Path(__file__).parent) + "/" + output_file,
-                        str(pathlib.Path(__file__).parent) + "/" + asserted_file
-                        ])
-        out = subprocess.check_output(["/Users/noguchikoutarou/nand2tetris/tools/TextComparer.sh",
-                                       str(pathlib.Path(__file__).parent) + "/" + output_file,
-                                       str(pathlib.Path(__file__).parent) + "/" + asserted_file
-                                       ])
+        try:
+            out = subprocess.check_output(["/Users/noguchikoutarou/nand2tetris/tools/TextComparer.sh",
+                                           str(pathlib.Path(__file__).parent) + "/" + output_file,
+                                           str(pathlib.Path(__file__).parent) + "/" + asserted_file
+                                           ])
+        except Exception as e:
+            print("\n", e)
+            subprocess.run(["/Users/noguchikoutarou/nand2tetris/tools/TextComparer.sh",
+                           str(pathlib.Path(__file__).parent) + "/" + output_file,
+                           str(pathlib.Path(__file__).parent) + "/" + asserted_file
+                            ])
         self.assertEqual(b'Comparison ended successfully\n', out)
         if b'Comparison ended successfully\n' != out:
             print(out)
@@ -33,7 +36,8 @@ class TestComplilationEngine(unittest.TestCase):
         '''
         compiler = self.set_up_compiler(s)
         compiler.compile_class_var_dec(self.root)
-        self.check(compiler, "test_compile_class_var_dec.xml", "unit_tests/test1.xml")
+        self.check(compiler, "unit_tests/class_var_dec/actual/simple.xml",
+                             "unit_tests/class_var_dec/asserted/simple.xml")
 
     def test_compile_expression(self):
         fixture = [
@@ -42,9 +46,10 @@ class TestComplilationEngine(unittest.TestCase):
             {"input": "(y + size) - 1", "asserted_file": "unit_tests/expression/asserted/trinomial.xml"},
         ]
         for i, test in enumerate(fixture):
-            compiler = self.set_up_compiler(test["input"])
-            compiler.compile_expression(self.root)
-            self.check(compiler, "/unit_tests/expression/actual/out_{}.xml".format(i), test["asserted_file"])
+            with self.subTest(input=test["input"], asserted_file=test["asserted_file"]):
+                compiler = self.set_up_compiler(test["input"])
+                compiler.compile_expression(self.root)
+                self.check(compiler, "/unit_tests/expression/actual/out_{}.xml".format(i), test["asserted_file"])
 
     def test_compile_term(self):
         fixture = [
@@ -69,9 +74,10 @@ class TestComplilationEngine(unittest.TestCase):
             {"input": "- j", "asserted_file": "unit_tests/term/assertion/unary_op.xml"}
         ]
         for i, test in enumerate(fixture):
-            compiler = self.set_up_compiler(test["input"])
-            compiler.compile_term(self.root)
-            self.check(compiler, "unit_tests/term/actual/out_{}.xml".format(i), test["asserted_file"])
+            with self.subTest(input=test["input"], asserted_file=test["asserted_file"]):
+                compiler = self.set_up_compiler(test["input"])
+                compiler.compile_term(self.root)
+                self.check(compiler, "unit_tests/term/actual/out_{}.xml".format(i), test["asserted_file"])
 
 
 if __name__ == "__main__":
