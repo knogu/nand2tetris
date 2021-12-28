@@ -72,30 +72,30 @@ class ComplilationEngine:
 
     def compile_term(self, parent):
         term = ET.SubElement(parent, "term")
-        read = self.tokenizer.read_token()
+        read = self.tokenizer.read_token(advance=False)
         if read["tag"] == self.tokenizer.TAG_INTEGER_CONST:
-            self.add_xml_child(term, self.tokenizer.TAG_INTEGER_CONST, read["token"])
+            self.add_xml_child(term, self.tokenizer.TAG_INTEGER_CONST, self.tokenizer.read_token()["token"])
         elif read["tag"] == self.tokenizer.TAG_STRING_CONST:
-            self.add_xml_child(term, self.tokenizer.TAG_STRING_CONST, read["token"][1:-1])
+            self.add_xml_child(term, self.tokenizer.TAG_STRING_CONST, self.tokenizer.read_token()["token"][1:-1])
         elif read["tag"] == self.tokenizer.TAG_KEYWORD:
             if read["token"] not in ("true", "false", "null", "this"):
                 raise Exception
-            self.add_xml_child(term, self.tokenizer.TAG_KEYWORD, read["token"])
+            self.add_xml_child(term, self.tokenizer.TAG_KEYWORD, self.tokenizer.read_token()["token"])
         elif read["token"] == "(":
-            self.add_xml_child(term, self.tokenizer.TAG_SYMBOL, read["token"])
+            self.add_xml_child(term, self.tokenizer.TAG_SYMBOL, self.tokenizer.read_token()["token"])
             self.compile_expression(term)
             read_latter = self.tokenizer.read_token()
             if read_latter["token"] != ")":
                 raise Exception
             self.add_xml_child(term, self.tokenizer.TAG_SYMBOL, read_latter["token"])
         elif read["token"] in ("-", "~"):
-            self.add_xml_child(term, self.tokenizer.TAG_SYMBOL, read["token"])
+            self.add_xml_child(term, self.tokenizer.TAG_SYMBOL, self.tokenizer.read_token()["token"])
             self.compile_term(term)
         # 以下の場合は先読みが必要
         # ただし、最後のトークンだった場合は変数に決定
         # 配列
-        elif self.tokenizer.read_token(advance=False)["token"] == "[":
-            self.add_xml_child(term, self.tokenizer.TAG_IDENTIFIER, read["token"])
+        elif self.tokenizer.has_more_tokens() and self.tokenizer.read_next_token()["token"] == "[":
+            self.add_xml_child(term, self.tokenizer.TAG_IDENTIFIER, self.tokenizer.read_token()["token"])
             self.add_xml_child(term, self.tokenizer.TAG_SYMBOL, self.tokenizer.read_token()["token"])
             self.compile_expression(term)
             read_latter = self.tokenizer.read_token()
