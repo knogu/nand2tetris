@@ -94,16 +94,16 @@ class ComplilationEngine:
         # 以下の場合は先読みが必要
         # ただし、最後のトークンだった場合は変数に決定
         # 配列
-        elif self.tokenizer.has_more_tokens() and self.tokenizer.read_next_token()["token"] == "[":
+        elif self.tokenizer.read_token(advance=False)["token"] == "[":
             self.add_xml_child(term, self.tokenizer.TAG_IDENTIFIER, read["token"])
-            self.add_xml_child(term, self.tokenizer.TAG_SYMBOL, read["token"])
+            self.add_xml_child(term, self.tokenizer.TAG_SYMBOL, self.tokenizer.read_token()["token"])
             self.compile_expression(term)
             read_latter = self.tokenizer.read_token()
-            if read_latter["token"] == "]":
+            if read_latter["token"] != "]":
                 raise Exception
             self.add_xml_child(term, self.tokenizer.TAG_SYMBOL, read_latter["token"])
         # サブルーチン呼び出し
-        elif self.tokenizer.has_more_tokens() and self.tokenizer.read_next_token()["token"] in (".", "("):
+        elif self.tokenizer.read_token(advance=False)["token"] in (".", "("):
             pass
         # 変数
         else:

@@ -1,0 +1,12 @@
+<root>
+    <term>
+        <identifier> a </identifier>
+        <symbol> [ </symbol>
+        <expression>
+        <term>
+            <integerConstant> 2 </integerConstant>
+        </term>
+        </expression>
+        <symbol> ] </symbol>
+    </term>
+</root>

@@ -33,36 +33,40 @@ class TestComplilationEngine(unittest.TestCase):
         '''
         compiler = self.set_up_compiler(s)
         compiler.compile_class_var_dec(self.root)
-        self.check(compiler, "test_compile_class_var_dec.xml", "test_output/test1.xml")
+        self.check(compiler, "test_compile_class_var_dec.xml", "unit_tests/test1.xml")
 
     def test_compile_expression(self):
         fixture = [
-            {"input": "\"string constant\"", "asserted_file": "test_output/expression/asserted/just_a_term.xml"},
-            {"input": "i | j", "asserted_file": "test_output/expression/asserted/binomial.xml"},
-            {"input": "(y + size) - 1", "asserted_file": "test_output/expression/asserted/trinomial.xml"},
+            {"input": "\"string constant\"", "asserted_file": "unit_tests/expression/asserted/just_a_term.xml"},
+            {"input": "i | j", "asserted_file": "unit_tests/expression/asserted/binomial.xml"},
+            {"input": "(y + size) - 1", "asserted_file": "unit_tests/expression/asserted/trinomial.xml"},
         ]
         for i, test in enumerate(fixture):
             compiler = self.set_up_compiler(test["input"])
             compiler.compile_expression(self.root)
-            self.check(compiler, "/test_output/expression/actual/out_{}.xml".format(i), test["asserted_file"])
+            self.check(compiler, "/unit_tests/expression/actual/out_{}.xml".format(i), test["asserted_file"])
 
     def test_compile_term(self):
         fixture = [
             # integerConstant
-            {"input": "333", "asserted_file": "test_output/term/assertion/integer_constant.xml"},
+            {"input": "333", "asserted_file": "unit_tests/term/assertion/integer_constant.xml"},
             # stringConstant
-            {"input": "\"this is test 333\"", "asserted_file": "test_output/term/assertion/string_constant.xml"},
+            {"input": "\"this is test 333\"", "asserted_file": "unit_tests/term/assertion/string_constant.xml"},
             # keywordConstant
-            {"input": "null", "asserted_file": "test_output/term/assertion/keyword_constant.xml"},
+            {"input": "null", "asserted_file": "unit_tests/term/assertion/keyword_constant.xml"},
+            # varname
+            {"input": "x", "asserted_file": "unit_tests/term/assertion/varname.xml"},
+            # 配列: varname[expression]
+            {"input": "a[2]", "asserted_file": "unit_tests/term/assertion/list.xml"},
             # (expression)
-            {"input": "(333)", "asserted_file": "test_output/term/assertion/in_bracket.xml"},
+            {"input": "(333)", "asserted_file": "unit_tests/term/assertion/in_bracket.xml"},
             # unaryOp term
-            {"input": "- j", "asserted_file": "test_output/term/assertion/unary_op.xml"}
+            {"input": "- j", "asserted_file": "unit_tests/term/assertion/unary_op.xml"}
         ]
         for i, test in enumerate(fixture):
             compiler = self.set_up_compiler(test["input"])
             compiler.compile_term(self.root)
-            self.check(compiler, "test_output/term/actual/out_{}.xml".format(i), test["asserted_file"])
+            self.check(compiler, "unit_tests/term/actual/out_{}.xml".format(i), test["asserted_file"])
 
 
 if __name__ == "__main__":
