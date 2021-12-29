@@ -187,6 +187,51 @@ class TestComplilationEngine(unittest.TestCase):
                 compiler.compile_var_dec(self.root)
                 self.check(compiler, "unit_tests/var_dec/actual/out_{}.xml".format(i), test["asserted_file"])
 
+    def test_compile_subroutine_body(self):
+        fixture = [
+            {"input": '''{
+                do Screen.setColor(true);
+                do Screen.drawRectangle(x, y, x + size, y + size);
+                return;
+            }
+            ''',
+             "asserted_file": "unit_tests/subroutine_body/asserted/one.xml"},
+            {"input": '''{
+                var char key;  // the key currently pressed by the user
+                var boolean exit;
+                let exit = false;
+                
+                while (~exit) {
+                    // waits for a key to be pressed
+                    while (key = 0) {
+                        let key = Keyboard.keyPressed();
+                        do moveSquare();
+                    }
+                    if (key = 81)  { let exit = true; }     // q key
+                    if (key = 90)  { do square.decSize(); } // z key
+                    if (key = 88)  { do square.incSize(); } // x key
+                    if (key = 131) { let direction = 1; }   // up arrow
+                    if (key = 133) { let direction = 2; }   // down arrow
+                    if (key = 130) { let direction = 3; }   // left arrow
+                    if (key = 132) { let direction = 4; }   // right arrow
+
+                    // waits for the key to be released
+                    while (~(key = 0)) {
+                        let key = Keyboard.keyPressed();
+                        do moveSquare();
+                    }
+                } // while
+                return;
+            }
+            ''',
+             "asserted_file": "unit_tests/subroutine_body/asserted/with_var.xml"},
+        ]
+        for i, test in enumerate(fixture):
+            with self.subTest(input=test["input"], asserted_file=test["asserted_file"]):
+                compiler = self.set_up_compiler(test["input"])
+                compiler.compile_subroutine_body(self.root)
+                self.check(compiler, "unit_tests/subroutine_body/actual/out_{}.xml".format(i), test["asserted_file"])
+
 
 if __name__ == "__main__":
     unittest.main()

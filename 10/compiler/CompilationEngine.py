@@ -205,6 +205,14 @@ class ComplilationEngine:
         self.compile_statements(while_statement)
         self.add_and_advance(while_statement, TAG_SYMBOL, "}")
 
+    def compile_subroutine_body(self, parent):
+        subroutine_body = ET.SubElement(parent, "subroutineBody")
+        self.add_and_advance(subroutine_body, TAG_SYMBOL, "{")
+        while self.check_current_token() == "var":
+            self.compile_var_dec(subroutine_body)
+        self.compile_statements(subroutine_body)
+        self.add_and_advance(subroutine_body, TAG_SYMBOL, "}")
+
     def output_xml(self, filepath, root):
         tree = ET.ElementTree(root)
         ET.indent(tree, space="\t", level=0)
