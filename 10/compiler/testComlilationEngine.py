@@ -29,6 +29,7 @@ class TestComplilationEngine(unittest.TestCase):
                            str(pathlib.Path(__file__).parent) + "/" + output_file,
                            str(pathlib.Path(__file__).parent) + "/" + asserted_file
                             ])
+            raise AssertionError
 
     def test_compile_class_var_dec(self):
         s = '''
@@ -113,6 +114,20 @@ class TestComplilationEngine(unittest.TestCase):
                 compiler.compile_let(self.root)
                 self.check(compiler, "unit_tests/do/actual/out_{}.xml".format(i), test["asserted_file"])
 
+    def test_compile_statements(self):
+        fixture = [
+            {"input": '''
+                let sum = sum + a[i];
+                let i = i + 1;
+            ''',
+             "asserted_file": "unit_tests/statements/asserted/one.xml"},
+        ]
+        for i, test in enumerate(fixture):
+            with self.subTest(input=test["input"], asserted_file=test["asserted_file"]):
+                compiler = self.set_up_compiler(test["input"])
+                compiler.compile_statements(self.root)
+                self.check(compiler, "unit_tests/statements/actual/out_{}.xml".format(i), test["asserted_file"])
+
     def test_compile_while(self):
         fixture = [
             {"input": '''
@@ -121,8 +136,45 @@ class TestComplilationEngine(unittest.TestCase):
                     do moveSquare();
                 }
             ''',
-             "asserted_file": "unit_tests/do/asserted/simple.xml"},
+             "asserted_file": "unit_tests/while/asserted/one.xml"},
         ]
+        for i, test in enumerate(fixture):
+            with self.subTest(input=test["input"], asserted_file=test["asserted_file"]):
+                compiler = self.set_up_compiler(test["input"])
+                compiler.compile_while(self.root)
+                self.check(compiler, "unit_tests/while/actual/out_{}.xml".format(i), test["asserted_file"])
+
+    def test_compile_if(self):
+        fixture = [
+            {"input": '''
+                if ((x + size) < 510) {
+                    do Screen.setColor(false);
+                    do Screen.drawRectangle(x, y, x + 1, y + size);
+                    let x = x + 2;
+                    do Screen.setColor(true);
+                    do Screen.drawRectangle((x + size) - 1, y, x + size, y + size);
+                }
+            ''',
+             "asserted_file": "unit_tests/if/asserted/without_else.xml"},
+            {"input": '''
+                if (false) {
+                    let s = "string constant";
+                    let s = null;
+                    let a[1] = a[2];
+                }
+                else {              // There is no else keyword in the Square files.
+                    let i = i * (-j);
+                    let j = j / (-2);   // note: unary negate constant 2
+                    let i = i | j;
+                }
+            ''',
+             "asserted_file": "unit_tests/if/asserted/with_else.xml"},
+        ]
+        for i, test in enumerate(fixture):
+            with self.subTest(input=test["input"], asserted_file=test["asserted_file"]):
+                compiler = self.set_up_compiler(test["input"])
+                compiler.compile_if(self.root)
+                self.check(compiler, "unit_tests/if/actual/out_{}.xml".format(i), test["asserted_file"])
 
 
 if __name__ == "__main__":
