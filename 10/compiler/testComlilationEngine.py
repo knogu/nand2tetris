@@ -79,6 +79,17 @@ class TestComplilationEngine(unittest.TestCase):
                 compiler.compile_term(self.root)
                 self.check(compiler, "unit_tests/term/actual/out_{}.xml".format(i), test["asserted_file"])
 
+    def test_compile_return(self):
+        fixture = [
+            {"input": "return;", "asserted_file": "unit_tests/return/asserted/return_none.xml"},
+            {"input": "return x;", "asserted_file": "unit_tests/return/asserted/return_x.xml"},
+        ]
+        for i, test in enumerate(fixture):
+            with self.subTest(input=test["input"], asserted_file=test["asserted_file"]):
+                compiler = self.set_up_compiler(test["input"])
+                compiler.compile_return(self.root)
+                self.check(compiler, "unit_tests/return/actual/out_{}.xml".format(i), test["asserted_file"])
+
 
 if __name__ == "__main__":
     unittest.main()

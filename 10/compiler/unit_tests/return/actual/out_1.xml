@@ -1,0 +1,11 @@
+<root>
+	<returnStatement>
+		<keyword>return</keyword>
+		<expression>
+			<term>
+				<identifier>x</identifier>
+			</term>
+		</expression>
+		<symbol>;</symbol>
+	</returnStatement>
+</root>
