@@ -90,6 +90,16 @@ class TestComplilationEngine(unittest.TestCase):
                 compiler.compile_return(self.root)
                 self.check(compiler, "unit_tests/return/actual/out_{}.xml".format(i), test["asserted_file"])
 
+    def test_compile_do(self):
+        fixture = [
+            {"input": "do draw();", "asserted_file": "unit_tests/do/asserted/simple.xml"},
+            {"input": "do Memory.deAlloc(this);", "asserted_file": "unit_tests/do/asserted/external_with_arg.xml"},
+        ]
+        for i, test in enumerate(fixture):
+            with self.subTest(input=test["input"], asserted_file=test["asserted_file"]):
+                compiler = self.set_up_compiler(test["input"])
+                compiler.compile_do(self.root)
+                self.check(compiler, "unit_tests/do/actual/out_{}.xml".format(i), test["asserted_file"])
 
 if __name__ == "__main__":
     unittest.main()

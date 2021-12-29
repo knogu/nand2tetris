@@ -1,0 +1,18 @@
+<root>
+	<doStatement>
+		<keyword>do</keyword>
+		<identifier>Memory</identifier>
+		<symbol>.</symbol>
+		<identifier>deAlloc</identifier>
+		<symbol>(</symbol>
+		<expressionList>
+			<expression>
+				<term>
+					<keyword>this</keyword>
+				</term>
+			</expression>
+		</expressionList>
+		<symbol>)</symbol>
+		<symbol>;</symbol>
+	</doStatement>
+</root>

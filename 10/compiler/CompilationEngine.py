@@ -146,6 +146,14 @@ class ComplilationEngine:
         assert self.tokenizer.read_token(advance=False)["token"] == ";"
         self.add_xml_child(return_statement, self.tokenizer.TAG_SYMBOL, self.tokenizer.read_token()["token"])
 
+    def compile_do(self, parent):
+        assert self.tokenizer.read_token(advance=False)["token"] == "do"
+        do_statement = ET.SubElement(parent, "doStatement")
+        self.add_xml_child(do_statement, self.tokenizer.TAG_KEYWORD, self.tokenizer.read_token()["token"])
+        self.compile_subroutine_call(do_statement)
+        assert self.tokenizer.read_token(advance=False)["token"] == ";"
+        self.add_xml_child(do_statement, self.tokenizer.TAG_SYMBOL, self.tokenizer.read_token()["token"])
+
     def output_xml(self, filepath, root):
         tree = ET.ElementTree(root)
         ET.indent(tree, space="\t", level=0)
