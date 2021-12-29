@@ -12,13 +12,16 @@ class ComplilationEngine:
         child = ET.SubElement(parent, child_tag)
         child.text = child_text
 
-    def add_and_advance(self, parent, asserted_tag, advance=True):
+    def add_and_advance(self, parent, asserted_tag, asserted_token=None, advance=True):
         '''
         現在のトークンをツリーに追加し、advanceがTrueならトークンを進める
         なるべくadvance=Trueにする（読み取りと同時にトークンが進む、というパターンでトークンの進みを管理したいので）
         '''
         read = self.tokenizer.read_token()
-        assert asserted_tag and read["tag"] == asserted_tag
+        if asserted_tag:
+            assert read["tag"] == asserted_tag
+        if asserted_token:
+            assert read["token"] == asserted_token
         self.sub_with_text(parent, read["tag"], read["token"])
 
     def check_current_token(self):
@@ -56,21 +59,18 @@ class ComplilationEngine:
         while self.tokenizer.token == ",":
             self.add_and_advance(class_var_dec, TAG_SYMBOL)
             self.add_and_advance(class_var_dec, TAG_IDENTIFIER)
-        assert self.tokenizer.token == ";"
-        self.add_and_advance(class_var_dec, TAG_SYMBOL)
+        self.add_and_advance(class_var_dec, TAG_SYMBOL, ";")
         return
 
     def compile_var_dec(self, parent):
-        assert self.check_current_token() == "var"
         var_dec = ET.SubElement(parent, "varDec")
-        self.add_and_advance(var_dec, TAG_KEYWORD)
+        self.add_and_advance(var_dec, TAG_KEYWORD, "var")
         self.get_type(var_dec)
         self.add_and_advance(var_dec, TAG_IDENTIFIER)
         while self.check_current_token() == ",":
             self.add_and_advance(var_dec, TAG_SYMBOL)
             self.add_and_advance(var_dec, TAG_IDENTIFIER)
-        assert self.check_current_token() == ";"
-        self.add_and_advance(var_dec, TAG_SYMBOL)
+        self.add_and_advance(var_dec, TAG_SYMBOL, ";")
 
     def compile_expression(self, parent):
         '''
@@ -95,8 +95,7 @@ class ComplilationEngine:
         elif read["token"] == "(":
             self.add_and_advance(term, TAG_SYMBOL)
             self.compile_expression(term)
-            assert self.check_current_token() == ")"
-            self.add_and_advance(term, TAG_SYMBOL)
+            self.add_and_advance(term, TAG_SYMBOL, ")")
         elif read["token"] in ("-", "~"):
             self.add_and_advance(term, TAG_SYMBOL)
             self.compile_term(term)
@@ -125,8 +124,7 @@ class ComplilationEngine:
             self.compile_expression(expression_list)
             if self.check_current_token() == ")":
                 return
-            assert self.check_current_token() == ","
-            self.add_and_advance(expression_list, TAG_SYMBOL)
+            self.add_and_advance(expression_list, TAG_SYMBOL, ",")
 
     def compile_subroutine_call(self, parent):
         '''
@@ -137,44 +135,34 @@ class ComplilationEngine:
         if self.check_current_token() == ".":
             self.add_and_advance(parent, TAG_SYMBOL)
             self.add_and_advance(parent, TAG_IDENTIFIER)
-        assert self.check_current_token() == "("
-        self.add_and_advance(parent, TAG_SYMBOL)
+        self.add_and_advance(parent, TAG_SYMBOL, "(")
         self.compile_expression_list(parent)
-        assert self.check_current_token() == ")"
-        self.add_and_advance(parent, TAG_SYMBOL)
+        self.add_and_advance(parent, TAG_SYMBOL, ")")
 
     def compile_return(self, parent):
-        assert self.check_current_token() == "return"
         return_statement = ET.SubElement(parent, "returnStatement")
-        self.add_and_advance(return_statement, TAG_KEYWORD)
+        self.add_and_advance(return_statement, TAG_KEYWORD, "return")
         if self.check_current_token() != ";":
             self.compile_expression(return_statement)
-        assert self.check_current_token() == ";"
-        self.add_and_advance(return_statement, TAG_SYMBOL)
+        self.add_and_advance(return_statement, TAG_SYMBOL, ";")
 
     def compile_do(self, parent):
-        assert self.check_current_token() == "do"
         do_statement = ET.SubElement(parent, "doStatement")
-        self.add_and_advance(do_statement, TAG_KEYWORD)
+        self.add_and_advance(do_statement, TAG_KEYWORD, "do")
         self.compile_subroutine_call(do_statement)
-        assert self.check_current_token() == ";"
-        self.add_and_advance(do_statement, TAG_SYMBOL)
+        self.add_and_advance(do_statement, TAG_SYMBOL, ";")
 
     def compile_let(self, parent):
-        assert self.check_current_token() == "let"
         let_statement = ET.SubElement(parent, "letStatement")
-        self.add_and_advance(let_statement, TAG_KEYWORD)
+        self.add_and_advance(let_statement, TAG_KEYWORD, "let")
         self.add_and_advance(let_statement, TAG_IDENTIFIER)
         if self.check_current_token() == "[":
             self.add_and_advance(let_statement, TAG_SYMBOL)
             self.compile_expression(let_statement)
-            assert self.check_current_token() == "]"
-            self.add_and_advance(let_statement, TAG_SYMBOL)
-        assert self.check_current_token() == "="
-        self.add_and_advance(let_statement, TAG_SYMBOL)
+            self.add_and_advance(let_statement, TAG_SYMBOL, "]")
+        self.add_and_advance(let_statement, TAG_SYMBOL, "=")
         self.compile_expression(let_statement)
-        assert self.check_current_token() == ";"
-        self.add_and_advance(let_statement, TAG_SYMBOL)
+        self.add_and_advance(let_statement, TAG_SYMBOL, ";")
 
     def compile_statements(self, parent):
         statements = ET.SubElement(parent, "statements")
@@ -193,41 +181,29 @@ class ComplilationEngine:
                 break
 
     def compile_if(self, parent):
-        assert self.check_current_token() == "if"
         if_statement = ET.SubElement(parent, "ifStatement")
-        self.add_and_advance(if_statement, TAG_KEYWORD)
-        assert self.check_current_token() == "("
-        self.add_and_advance(if_statement, TAG_SYMBOL)
+        self.add_and_advance(if_statement, TAG_KEYWORD, "if")
+        self.add_and_advance(if_statement, TAG_SYMBOL, "(")
         self.compile_expression(if_statement)
-        assert self.check_current_token() == ")"
-        self.add_and_advance(if_statement, TAG_SYMBOL)
-        assert self.check_current_token() == "{"
-        self.add_and_advance(if_statement, TAG_SYMBOL)
+        self.add_and_advance(if_statement, TAG_SYMBOL, ")")
+        self.add_and_advance(if_statement, TAG_SYMBOL, "{")
         self.compile_statements(if_statement)
-        assert self.check_current_token() == "}"
-        self.add_and_advance(if_statement, TAG_SYMBOL)
+        self.add_and_advance(if_statement, TAG_SYMBOL, "}")
         if self.check_current_token() == "else":
             self.add_and_advance(if_statement, TAG_KEYWORD)
-            assert self.check_current_token() == "{"
-            self.add_and_advance(if_statement, TAG_SYMBOL)
+            self.add_and_advance(if_statement, TAG_SYMBOL, "{")
             self.compile_statements(if_statement)
-            assert self.check_current_token() == "}"
-            self.add_and_advance(if_statement, TAG_SYMBOL)
+            self.add_and_advance(if_statement, TAG_SYMBOL, "}")
 
     def compile_while(self, parent):
-        assert self.check_current_token() == "while"
         while_statement = ET.SubElement(parent, "whileStatement")
-        self.add_and_advance(while_statement, TAG_KEYWORD)
-        assert self.check_current_token() == "("
-        self.add_and_advance(while_statement, TAG_SYMBOL)
+        self.add_and_advance(while_statement, TAG_KEYWORD, "while")
+        self.add_and_advance(while_statement, TAG_SYMBOL, "(")
         self.compile_expression(while_statement)
-        assert self.check_current_token() == ")"
-        self.add_and_advance(while_statement, TAG_SYMBOL)
-        assert self.check_current_token() == "{"
-        self.add_and_advance(while_statement, TAG_SYMBOL)
+        self.add_and_advance(while_statement, TAG_SYMBOL, ")")
+        self.add_and_advance(while_statement, TAG_SYMBOL, "{")
         self.compile_statements(while_statement)
-        assert self.check_current_token() == "}"
-        self.add_and_advance(while_statement, TAG_SYMBOL)
+        self.add_and_advance(while_statement, TAG_SYMBOL, "}")
 
     def output_xml(self, filepath, root):
         tree = ET.ElementTree(root)
