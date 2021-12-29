@@ -1,0 +1,31 @@
+<root>
+    <letStatement>
+        <keyword> let </keyword>
+        <identifier> a </identifier>
+        <symbol> [ </symbol>
+        <expression>
+        <term>
+            <identifier> i </identifier>
+        </term>
+        </expression>
+        <symbol> ] </symbol>
+        <symbol> = </symbol>
+        <expression>
+        <term>
+            <identifier> Keyboard </identifier>
+            <symbol> . </symbol>
+            <identifier> readInt </identifier>
+            <symbol> ( </symbol>
+            <expressionList>
+            <expression>
+                <term>
+                <stringConstant> ENTER THE NEXT NUMBER:  </stringConstant>
+                </term>
+            </expression>
+            </expressionList>
+            <symbol> ) </symbol>
+        </term>
+        </expression>
+        <symbol> ; </symbol>
+    </letStatement>
+</root>

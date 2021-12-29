@@ -1,0 +1,13 @@
+<root>
+    <letStatement>
+        <keyword> let </keyword>
+        <identifier> key </identifier>
+        <symbol> = </symbol>
+        <expression>
+        <term>
+            <identifier> key </identifier>
+        </term>
+        </expression>
+        <symbol> ; </symbol>
+    </letStatement>
+</root>

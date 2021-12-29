@@ -20,15 +20,15 @@ class TestComplilationEngine(unittest.TestCase):
                                            str(pathlib.Path(__file__).parent) + "/" + output_file,
                                            str(pathlib.Path(__file__).parent) + "/" + asserted_file
                                            ])
+            self.assertEqual(b'Comparison ended successfully\n', out)
+            if b'Comparison ended successfully\n' != out:
+                print(out)
         except Exception as e:
             print("\n", e)
             subprocess.run(["/Users/noguchikoutarou/nand2tetris/tools/TextComparer.sh",
                            str(pathlib.Path(__file__).parent) + "/" + output_file,
                            str(pathlib.Path(__file__).parent) + "/" + asserted_file
                             ])
-        self.assertEqual(b'Comparison ended successfully\n', out)
-        if b'Comparison ended successfully\n' != out:
-            print(out)
 
     def test_compile_class_var_dec(self):
         s = '''
@@ -100,6 +100,30 @@ class TestComplilationEngine(unittest.TestCase):
                 compiler = self.set_up_compiler(test["input"])
                 compiler.compile_do(self.root)
                 self.check(compiler, "unit_tests/do/actual/out_{}.xml".format(i), test["asserted_file"])
+
+    def test_compile_let(self):
+        fixture = [
+            {"input": "let key = key;", "asserted_file": "unit_tests/let/asserted/simple.xml"},
+            {"input": "let a[i] = Keyboard.readInt(\"ENTER THE NEXT NUMBER: \");",
+             "asserted_file": "unit_tests/let/asserted/list.xml"},
+        ]
+        for i, test in enumerate(fixture):
+            with self.subTest(input=test["input"], asserted_file=test["asserted_file"]):
+                compiler = self.set_up_compiler(test["input"])
+                compiler.compile_let(self.root)
+                self.check(compiler, "unit_tests/do/actual/out_{}.xml".format(i), test["asserted_file"])
+
+    def test_compile_while(self):
+        fixture = [
+            {"input": '''
+                while (key) {
+                    let key = key;
+                    do moveSquare();
+                }
+            ''',
+             "asserted_file": "unit_tests/do/asserted/simple.xml"},
+        ]
+
 
 if __name__ == "__main__":
     unittest.main()
