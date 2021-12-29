@@ -49,7 +49,6 @@ class ComplilationEngine:
         ex) static int x, y;
         '''
         assert self.check_current_token() in ("static", "field")
-
         class_var_dec = ET.SubElement(root, "classVarDec")
         self.add_and_advance(class_var_dec, TAG_KEYWORD)
         self.get_type(class_var_dec)
@@ -60,6 +59,18 @@ class ComplilationEngine:
         assert self.tokenizer.token == ";"
         self.add_and_advance(class_var_dec, TAG_SYMBOL)
         return
+
+    def compile_var_dec(self, parent):
+        assert self.check_current_token() == "var"
+        var_dec = ET.SubElement(parent, "varDec")
+        self.add_and_advance(var_dec, TAG_KEYWORD)
+        self.get_type(var_dec)
+        self.add_and_advance(var_dec, TAG_IDENTIFIER)
+        while self.check_current_token() == ",":
+            self.add_and_advance(var_dec, TAG_SYMBOL)
+            self.add_and_advance(var_dec, TAG_IDENTIFIER)
+        assert self.check_current_token() == ";"
+        self.add_and_advance(var_dec, TAG_SYMBOL)
 
     def compile_expression(self, parent):
         '''
@@ -217,7 +228,6 @@ class ComplilationEngine:
         self.compile_statements(while_statement)
         assert self.check_current_token() == "}"
         self.add_and_advance(while_statement, TAG_SYMBOL)
-
 
     def output_xml(self, filepath, root):
         tree = ET.ElementTree(root)

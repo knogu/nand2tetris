@@ -176,6 +176,17 @@ class TestComplilationEngine(unittest.TestCase):
                 compiler.compile_if(self.root)
                 self.check(compiler, "unit_tests/if/actual/out_{}.xml".format(i), test["asserted_file"])
 
+    def test_compile_var_dec(self):
+        fixture = [
+            {"input": "var SquareGame game;", "asserted_file": "unit_tests/var_dec/asserted/simple.xml"},
+            {"input": "var int i, j;", "asserted_file": "unit_tests/var_dec/asserted/double.xml"},
+        ]
+        for i, test in enumerate(fixture):
+            with self.subTest(input=test["input"], asserted_file=test["asserted_file"]):
+                compiler = self.set_up_compiler(test["input"])
+                compiler.compile_var_dec(self.root)
+                self.check(compiler, "unit_tests/var_dec/actual/out_{}.xml".format(i), test["asserted_file"])
+
 
 if __name__ == "__main__":
     unittest.main()
