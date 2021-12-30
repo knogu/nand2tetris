@@ -213,6 +213,32 @@ class ComplilationEngine:
         self.compile_statements(subroutine_body)
         self.add_and_advance(subroutine_body, TAG_SYMBOL, "}")
 
+    def compile_parameter_list(self, parent):
+        parameter_list = ET.SubElement(parent, "parameterList")
+        # 引数なしだった場合
+        if self.check_current_token() == ")":
+            return
+        while True:
+            self.get_type(parameter_list)
+            self.add_and_advance(parameter_list, TAG_IDENTIFIER)
+            if self.check_current_token() != ",":
+                break
+            self.add_and_advance(parameter_list, TAG_SYMBOL, ",")
+
+    def compile_subroutine_dec(self, parent):
+        subroutine_dec = ET.SubElement(parent, "subroutineDec")
+        assert self.check_current_token() in ("constructor", "function", "method")
+        self.add_and_advance(subroutine_dec, TAG_KEYWORD)
+        if self.check_current_token() == "void":
+            self.add_and_advance(subroutine_dec, TAG_KEYWORD)
+        else:
+            self.get_type(subroutine_dec)
+        self.add_and_advance(subroutine_dec, TAG_IDENTIFIER)
+        self.add_and_advance(subroutine_dec, TAG_SYMBOL, "(")
+        self.compile_parameter_list(subroutine_dec)
+        self.add_and_advance(subroutine_dec, TAG_SYMBOL, ")")
+        self.compile_subroutine_body(subroutine_dec)
+
     def output_xml(self, filepath, root):
         tree = ET.ElementTree(root)
         ET.indent(tree, space="\t", level=0)

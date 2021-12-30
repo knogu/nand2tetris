@@ -232,6 +232,41 @@ class TestComplilationEngine(unittest.TestCase):
                 compiler.compile_subroutine_body(self.root)
                 self.check(compiler, "unit_tests/subroutine_body/actual/out_{}.xml".format(i), test["asserted_file"])
 
+    def test_compile_parameter_list(self):
+        fixture = [
+            {"input": "int Ax, int Ay, int Asize", "asserted_file": "unit_tests/parameter_list/asserted/simple.xml"},
+        ]
+        for i, test in enumerate(fixture):
+            with self.subTest(input=test["input"], asserted_file=test["asserted_file"]):
+                compiler = self.set_up_compiler(test["input"])
+                compiler.compile_parameter_list(self.root)
+                self.check(compiler, "unit_tests/parameter_list/actual/out_{}.xml".format(i), test["asserted_file"])
+
+    def test_compile_subroutine_dec(self):
+        fixture = [
+            {"input": '''
+                method void dispose() {
+                    do Memory.deAlloc(this);
+                    return;
+                }
+            ''',
+             "asserted_file": "unit_tests/subroutine_dec/asserted/simple.xml"},
+            {"input": '''
+                constructor Square new(int Ax, int Ay, int Asize) {
+                    let x = Ax;
+                    let y = Ay;
+                    let size = Asize;
+                    do draw();
+                    return this;
+                }
+            ''',
+             "asserted_file": "unit_tests/subroutine_dec/asserted/constructor.xml"},
+        ]
+        for i, test in enumerate(fixture):
+            with self.subTest(input=test["input"], asserted_file=test["asserted_file"]):
+                compiler = self.set_up_compiler(test["input"])
+                compiler.compile_subroutine_dec(self.root)
+                self.check(compiler, "unit_tests/subroutine_dec/actual/out_{}.xml".format(i), test["asserted_file"])
 
 if __name__ == "__main__":
     unittest.main()
