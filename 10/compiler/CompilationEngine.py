@@ -31,14 +31,15 @@ class ComplilationEngine:
         return self.tokenizer.read_token(advance=False)["token"]
 
     def compile_class(self):
-        root = ET.Element("class")
-        self.root = root
-        self.add_and_advance(root, TAG_KEYWORD)
-        self.add_and_advance(root, TAG_IDENTIFIER)
-        self.add_and_advance(root, TAG_SYMBOL)
-        self.tokenizer.advance()
-        while self.tokenizer.token in ("static", "field"):
-            self.compile_class_var_dec(root)
+        self.root = ET.Element("class")
+        self.add_and_advance(self.root, TAG_KEYWORD)
+        self.add_and_advance(self.root, TAG_IDENTIFIER)
+        self.add_and_advance(self.root, TAG_SYMBOL, "{")
+        while self.check_current_token() in ("static", "field"):
+            self.compile_class_var_dec(self.root)
+        while self.check_current_token() != "}":
+            self.compile_subroutine_dec(self.root)
+        self.add_and_advance(self.root, TAG_SYMBOL, "}")
 
     def get_type(self, root):
         if self.check_current_token() in ("int", "char", "boolean"):
@@ -239,10 +240,10 @@ class ComplilationEngine:
         self.add_and_advance(subroutine_dec, TAG_SYMBOL, ")")
         self.compile_subroutine_body(subroutine_dec)
 
-    def output_xml(self, filepath, root):
-        tree = ET.ElementTree(root)
+    def output_xml(self, filepath, root=None, abspath=False):
+        tree = ET.ElementTree(root if root else self.root)
         ET.indent(tree, space="\t", level=0)
-        path = str(pathlib.Path(__file__).parent) + "/" + filepath
+        path = filepath if abspath else str(pathlib.Path(__file__).parent) + "/" + filepath
         tree.write(path, encoding="utf-8", short_empty_elements=False)
         # 空要素のタグ間に改行を入れる（nand2tetrisのツールでの比較のため）
         for line in fileinput.input(path, inplace=True):

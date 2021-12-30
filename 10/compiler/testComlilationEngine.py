@@ -4,6 +4,7 @@ from JackTokenizer import JackTokenizer
 import xml.etree.ElementTree as ET
 import subprocess
 import pathlib
+import os
 
 
 class TestComplilationEngine(unittest.TestCase):
@@ -267,6 +268,26 @@ class TestComplilationEngine(unittest.TestCase):
                 compiler = self.set_up_compiler(test["input"])
                 compiler.compile_subroutine_dec(self.root)
                 self.check(compiler, "unit_tests/subroutine_dec/actual/out_{}.xml".format(i), test["asserted_file"])
+
+    def test_compile_class(self):
+        dirs = ["ArrayTest", "Square"]
+        for dir in dirs:
+            dirpath = str(pathlib.Path(__file__).parent.parent) + "/" + dir
+            for i, file in enumerate(os.listdir(dirpath)):
+                if file[-4:] != "jack":
+                    continue
+                input_path = dirpath + "/" + file
+                tokenizer = JackTokenizer.construct_from_file(input_path)
+                compiler = ComplilationEngine(tokenizer)
+                compiler.compile_class()
+                output_path = dirpath + "/out" + str(i) + ".xml"
+                compiler.output_xml(output_path, abspath=True)
+                out = subprocess.check_output(["/Users/noguchikoutarou/nand2tetris/tools/TextComparer.sh",
+                                               output_path,
+                                               input_path[:-4] + "xml"
+                                               ])
+                self.assertEqual(b'Comparison ended successfully\n', out)
+
 
 if __name__ == "__main__":
     unittest.main()
