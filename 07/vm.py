@@ -28,7 +28,8 @@ else:
 
 for i, path in enumerate(vm_files):
     parser = Parser(path)
-    c_writer = CodeWriter(path, sys.argv[2], True if i > 0 else False)
+    c_writer = CodeWriter(
+        path, sys.argv[2], True if i > 0 else False, True if i == 0 else False)
 
     while True:
         # print(parser.tmp_line())

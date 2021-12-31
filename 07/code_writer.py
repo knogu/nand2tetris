@@ -2,7 +2,10 @@ import re
 
 
 class CodeWriter:
-    def __init__(self, input_file_path, output_filename, is_mode_a=True):
+    def __init__(self, input_file_path, output_filename, is_mode_a=True, is_SPinit_needed=True):
+        # debug
+        is_mode_a = False
+        is_SPinit_needed = False
         m = re.match(r'(.+/)([^/]+).vm', input_file_path)
         # 拡張子なしのファイル名(用途: static変数のシンボル)
         self.vm_filename = m.groups()[1]
@@ -31,16 +34,25 @@ class CodeWriter:
             "pointer": 3,
             "temp": 5
         }
+        if is_SPinit_needed:
+            self.__write_code_lines([
+                "@256",
+                "D = A",
+                "@SP",
+                "M = D",
+            ])
 
     def close(self):
         self.f.close()
 
     def writeArithmetic(self, command):
+        # (code_lines実行前での)SP-2にSPポインタとAレジスタを移す
         setM = [
             "@SP",
             "M = M-1",
             "A = M",
         ]
+        # (code_lines実行前での)SP-1のメモリの値をDレジスタに保持
         code_for_binary_before_comp = [
             "@SP",
             "M = M-1",
