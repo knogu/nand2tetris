@@ -1,3 +1,7 @@
+@256
+D = A
+@SP
+M = D
 //begin func Sys.init
 (Sys.init)
 @4
