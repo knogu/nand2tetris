@@ -1,6 +1,6 @@
 import unittest
-from CompilationEngine import ComplilationEngine
-from JackTokenizer import JackTokenizer
+from compilation_engine import ComplilationEngine
+from jack_tokenizer import JackTokenizer
 import xml.etree.ElementTree as ET
 import subprocess
 import pathlib
