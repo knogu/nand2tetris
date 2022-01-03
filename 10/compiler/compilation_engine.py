@@ -1,12 +1,16 @@
 import xml.etree.ElementTree as ET
-from const import OP, TAG_KEYWORD, TAG_SYMBOL, TAG_IDENTIFIER, TAG_INTEGER_CONST, TAG_STRING_CONST
+from const import OP, TAG_KEYWORD, TAG_SYMBOL, TAG_IDENTIFIER, TAG_INTEGER_CONST, TAG_STRING_CONST, CONSTANT,\
+    ARG, LOCAL, STATIC, THIS, THAT, POINTER, TEMP, OP_COMMAND
 import pathlib
 import fileinput
+from vm_writer import VMWriter
 
 
 class ComplilationEngine:
-    def __init__(self, tokenizer):
+    def __init__(self, tokenizer, vm_out_path=None):
         self.tokenizer = tokenizer
+        if vm_out_path:
+            self.vm_writer = VMWriter(vm_out_path)
 
     def sub_with_text(self, parent, child_tag, child_text):
         child = ET.SubElement(parent, child_tag)
@@ -82,6 +86,7 @@ class ComplilationEngine:
         while self.check_current_token() in OP:
             self.add_and_advance(expression, TAG_SYMBOL)
             self.compile_term(expression)
+        return expression
 
     def compile_term(self, parent):
         term = ET.SubElement(parent, "term")
@@ -115,6 +120,37 @@ class ComplilationEngine:
         # 変数
         else:
             self.add_and_advance(term, TAG_IDENTIFIER)
+
+    def output_term(self, term: ET.Element):
+        if len(term) == 1:
+            if term[0].tag == "integerConstant":
+                self.vm_writer.write_push(CONSTANT, int(term[0].text))
+            else:
+                raise Exception
+        elif term[0].text == "(":
+            self.output_expression(term[1])
+        else:
+            raise Exception
+
+    def output_op(self, op):
+        self.vm_writer.write_arithmetic(OP_COMMAND[op.text])
+
+    def create_expression(self, children: list[ET.Element]):
+        expression = ET.Element("expression")
+        for child in children:
+            expression.append(child)
+        return expression
+
+    # expressionのノードをどう初期化するか、は要検討かも（とりあえず引数で受け取る）
+    def output_expression(self, expression: ET.Element):
+        # term (op term)* の形だから、childの数が偶数にはならない
+        if len(expression) % 2 == 0:
+            raise Exception
+        self.output_term(expression[0])
+        # 最初のtermの後に、op termが一度以上続く場合
+        if len(expression) >= 3:
+            self.output_expression(self.create_expression(expression[2:]))
+            self.output_op(expression[1])
 
     def compile_expression_list(self, parent):
         # ↓呼び出し元で、expression_listの両側が()で閉じられてることに依存したロジック

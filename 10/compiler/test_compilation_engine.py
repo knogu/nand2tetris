@@ -8,13 +8,13 @@ import os
 
 
 class TestComplilationEngine(unittest.TestCase):
-    def set_up_compiler(self, input):
+    def set_up_compiler(self, input, vm_out=None):
         self.root = ET.Element("root")
         tokenizer = JackTokenizer(input)
-        compiler = ComplilationEngine(tokenizer)
+        compiler = ComplilationEngine(tokenizer, vm_out)
         return compiler
 
-    def check(self, compiler, output_file, asserted_file):
+    def check_xml(self, compiler, output_file, asserted_file):
         compiler.output_xml(output_file, self.root)
         try:
             out = subprocess.check_output(["/Users/noguchikoutarou/nand2tetris/tools/TextComparer.sh",
@@ -32,14 +32,31 @@ class TestComplilationEngine(unittest.TestCase):
                             ])
             raise AssertionError
 
+    def check_vm(self, output_file, asserted_file):
+        try:
+            out = subprocess.check_output(["/Users/noguchikoutarou/nand2tetris/tools/TextComparer.sh",
+                                           output_file,
+                                           str(pathlib.Path(__file__).parent) + "/" + asserted_file
+                                           ])
+            self.assertEqual(b'Comparison ended successfully\n', out)
+            if b'Comparison ended successfully\n' != out:
+                print(out)
+        except Exception as e:
+            print("\n", e)
+            subprocess.run(["/Users/noguchikoutarou/nand2tetris/tools/TextComparer.sh",
+                            output_file,
+                            str(pathlib.Path(__file__).parent) + "/" + asserted_file
+                            ])
+            raise AssertionError
+
     def test_compile_class_var_dec(self):
         s = '''
         static int a, b;
         '''
         compiler = self.set_up_compiler(s)
         compiler.compile_class_var_dec(self.root)
-        self.check(compiler, "unit_tests/class_var_dec/actual/simple.xml",
-                             "unit_tests/class_var_dec/asserted/simple.xml")
+        self.check_xml(compiler, "unit_tests/class_var_dec/actual/simple.xml",
+                       "unit_tests/class_var_dec/asserted/simple.xml")
 
     def test_compile_expression(self):
         fixture = [
@@ -51,7 +68,20 @@ class TestComplilationEngine(unittest.TestCase):
             with self.subTest(input=test["input"], asserted_file=test["asserted_file"]):
                 compiler = self.set_up_compiler(test["input"])
                 compiler.compile_expression(self.root)
-                self.check(compiler, "/unit_tests/expression/actual/out_{}.xml".format(i), test["asserted_file"])
+                self.check_xml(compiler, "/unit_tests/expression/actual/out_{}.xml".format(i), test["asserted_file"])
+
+    def test_output_expression(self):
+        fixture = [
+            {"input": "1 + (2 * 3)", "asserted_file": "unit_tests/output_expression/asserted/one.vm"},
+        ]
+        for i, test in enumerate(fixture):
+            with self.subTest(input=test["input"], asserted_file=test["asserted_file"]):
+                out_path = "./unit_tests/output_expression/actual/out_{}.vm".format(i)
+                compiler = self.set_up_compiler(test["input"], out_path)
+                exp = compiler.compile_expression(self.root)
+                compiler.output_expression(exp)
+                compiler.vm_writer.f.close()
+                self.check_vm(out_path, test["asserted_file"])
 
     def test_compile_term(self):
         fixture = [
@@ -79,7 +109,7 @@ class TestComplilationEngine(unittest.TestCase):
             with self.subTest(input=test["input"], asserted_file=test["asserted_file"]):
                 compiler = self.set_up_compiler(test["input"])
                 compiler.compile_term(self.root)
-                self.check(compiler, "unit_tests/term/actual/out_{}.xml".format(i), test["asserted_file"])
+                self.check_xml(compiler, "unit_tests/term/actual/out_{}.xml".format(i), test["asserted_file"])
 
     def test_compile_return(self):
         fixture = [
@@ -90,7 +120,7 @@ class TestComplilationEngine(unittest.TestCase):
             with self.subTest(input=test["input"], asserted_file=test["asserted_file"]):
                 compiler = self.set_up_compiler(test["input"])
                 compiler.compile_return(self.root)
-                self.check(compiler, "unit_tests/return/actual/out_{}.xml".format(i), test["asserted_file"])
+                self.check_xml(compiler, "unit_tests/return/actual/out_{}.xml".format(i), test["asserted_file"])
 
     def test_compile_do(self):
         fixture = [
@@ -101,7 +131,7 @@ class TestComplilationEngine(unittest.TestCase):
             with self.subTest(input=test["input"], asserted_file=test["asserted_file"]):
                 compiler = self.set_up_compiler(test["input"])
                 compiler.compile_do(self.root)
-                self.check(compiler, "unit_tests/do/actual/out_{}.xml".format(i), test["asserted_file"])
+                self.check_xml(compiler, "unit_tests/do/actual/out_{}.xml".format(i), test["asserted_file"])
 
     def test_compile_let(self):
         fixture = [
@@ -113,7 +143,7 @@ class TestComplilationEngine(unittest.TestCase):
             with self.subTest(input=test["input"], asserted_file=test["asserted_file"]):
                 compiler = self.set_up_compiler(test["input"])
                 compiler.compile_let(self.root)
-                self.check(compiler, "unit_tests/do/actual/out_{}.xml".format(i), test["asserted_file"])
+                self.check_xml(compiler, "unit_tests/do/actual/out_{}.xml".format(i), test["asserted_file"])
 
     def test_compile_statements(self):
         fixture = [
@@ -127,7 +157,7 @@ class TestComplilationEngine(unittest.TestCase):
             with self.subTest(input=test["input"], asserted_file=test["asserted_file"]):
                 compiler = self.set_up_compiler(test["input"])
                 compiler.compile_statements(self.root)
-                self.check(compiler, "unit_tests/statements/actual/out_{}.xml".format(i), test["asserted_file"])
+                self.check_xml(compiler, "unit_tests/statements/actual/out_{}.xml".format(i), test["asserted_file"])
 
     def test_compile_while(self):
         fixture = [
@@ -143,7 +173,7 @@ class TestComplilationEngine(unittest.TestCase):
             with self.subTest(input=test["input"], asserted_file=test["asserted_file"]):
                 compiler = self.set_up_compiler(test["input"])
                 compiler.compile_while(self.root)
-                self.check(compiler, "unit_tests/while/actual/out_{}.xml".format(i), test["asserted_file"])
+                self.check_xml(compiler, "unit_tests/while/actual/out_{}.xml".format(i), test["asserted_file"])
 
     def test_compile_if(self):
         fixture = [
@@ -175,7 +205,7 @@ class TestComplilationEngine(unittest.TestCase):
             with self.subTest(input=test["input"], asserted_file=test["asserted_file"]):
                 compiler = self.set_up_compiler(test["input"])
                 compiler.compile_if(self.root)
-                self.check(compiler, "unit_tests/if/actual/out_{}.xml".format(i), test["asserted_file"])
+                self.check_xml(compiler, "unit_tests/if/actual/out_{}.xml".format(i), test["asserted_file"])
 
     def test_compile_var_dec(self):
         fixture = [
@@ -186,7 +216,7 @@ class TestComplilationEngine(unittest.TestCase):
             with self.subTest(input=test["input"], asserted_file=test["asserted_file"]):
                 compiler = self.set_up_compiler(test["input"])
                 compiler.compile_var_dec(self.root)
-                self.check(compiler, "unit_tests/var_dec/actual/out_{}.xml".format(i), test["asserted_file"])
+                self.check_xml(compiler, "unit_tests/var_dec/actual/out_{}.xml".format(i), test["asserted_file"])
 
     def test_compile_subroutine_body(self):
         fixture = [
@@ -201,7 +231,7 @@ class TestComplilationEngine(unittest.TestCase):
                 var char key;  // the key currently pressed by the user
                 var boolean exit;
                 let exit = false;
-                
+
                 while (~exit) {
                     // waits for a key to be pressed
                     while (key = 0) {
@@ -231,7 +261,8 @@ class TestComplilationEngine(unittest.TestCase):
             with self.subTest(input=test["input"], asserted_file=test["asserted_file"]):
                 compiler = self.set_up_compiler(test["input"])
                 compiler.compile_subroutine_body(self.root)
-                self.check(compiler, "unit_tests/subroutine_body/actual/out_{}.xml".format(i), test["asserted_file"])
+                self.check_xml(compiler, "unit_tests/subroutine_body/actual/out_{}.xml".format(i),
+                               test["asserted_file"])
 
     def test_compile_parameter_list(self):
         fixture = [
@@ -241,7 +272,7 @@ class TestComplilationEngine(unittest.TestCase):
             with self.subTest(input=test["input"], asserted_file=test["asserted_file"]):
                 compiler = self.set_up_compiler(test["input"])
                 compiler.compile_parameter_list(self.root)
-                self.check(compiler, "unit_tests/parameter_list/actual/out_{}.xml".format(i), test["asserted_file"])
+                self.check_xml(compiler, "unit_tests/parameter_list/actual/out_{}.xml".format(i), test["asserted_file"])
 
     def test_compile_subroutine_dec(self):
         fixture = [
@@ -267,7 +298,7 @@ class TestComplilationEngine(unittest.TestCase):
             with self.subTest(input=test["input"], asserted_file=test["asserted_file"]):
                 compiler = self.set_up_compiler(test["input"])
                 compiler.compile_subroutine_dec(self.root)
-                self.check(compiler, "unit_tests/subroutine_dec/actual/out_{}.xml".format(i), test["asserted_file"])
+                self.check_xml(compiler, "unit_tests/subroutine_dec/actual/out_{}.xml".format(i), test["asserted_file"])
 
     def test_compile_class(self):
         dirs = ["ArrayTest", "Square"]
