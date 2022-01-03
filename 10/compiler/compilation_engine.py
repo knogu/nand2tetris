@@ -123,8 +123,10 @@ class ComplilationEngine:
 
     def output_term(self, term: ET.Element):
         if len(term) == 1:
-            if term[0].tag == "integerConstant":
+            if term[0].tag == TAG_INTEGER_CONST:
                 self.vm_writer.write_push(CONSTANT, int(term[0].text))
+            # elif term[0].tag == TAG_IDENTIFIER:
+            #     self.vm_writer.write_push(, int(term[0].text))
             else:
                 raise Exception
         elif term[0].text == "(":
@@ -188,6 +190,20 @@ class ComplilationEngine:
         self.add_and_advance(do_statement, TAG_KEYWORD, "do")
         self.compile_subroutine_call(do_statement)
         self.add_and_advance(do_statement, TAG_SYMBOL, ";")
+        return do_statement
+
+    def output_do(self, do_statement):
+        func_name = ""
+        for i in range(1, len(do_statement)):
+            if do_statement[i].text == "(":
+                break
+            func_name += do_statement[i].text
+
+        expression_list = do_statement.find("expressionList")
+        for expression in expression_list:
+            self.output_expression(expression)
+
+        self.vm_writer.write_call(func_name, len(expression_list))
 
     def compile_let(self, parent):
         let_statement = ET.SubElement(parent, "letStatement")

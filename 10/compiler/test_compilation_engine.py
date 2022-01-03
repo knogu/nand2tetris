@@ -73,6 +73,7 @@ class TestComplilationEngine(unittest.TestCase):
     def test_output_expression(self):
         fixture = [
             {"input": "1 + (2 * 3)", "asserted_file": "unit_tests/output_expression/asserted/one.vm"},
+            # {"input": "x+g(2,y,-z)*5", "asserted_file": "unit_tests/output_expression/asserted/p259.vm"},
         ]
         for i, test in enumerate(fixture):
             with self.subTest(input=test["input"], asserted_file=test["asserted_file"]):
@@ -132,6 +133,20 @@ class TestComplilationEngine(unittest.TestCase):
                 compiler = self.set_up_compiler(test["input"])
                 compiler.compile_do(self.root)
                 self.check_xml(compiler, "unit_tests/do/actual/out_{}.xml".format(i), test["asserted_file"])
+
+    def test_output_do(self):
+        fixture = [
+            {"input": "do Output.printInt(1 + (2 * 3));", "asserted_file": "unit_tests/output_do/asserted/seven.vm"},
+        ]
+        for i, test in enumerate(fixture):
+            with self.subTest(input=test["input"], asserted_file=test["asserted_file"]):
+                out_path = "/Users/noguchikoutarou/nand2tetris/projects/10/compiler/unit_tests/output_do/actual/out_{}.vm".format(i)
+                compiler = self.set_up_compiler(test["input"], out_path)
+                do_statement = compiler.compile_do(self.root)
+                # ET.dump(do_statement)
+                compiler.output_do(do_statement)
+                compiler.vm_writer.f.close()
+                self.check_vm(out_path, test["asserted_file"])
 
     def test_compile_let(self):
         fixture = [

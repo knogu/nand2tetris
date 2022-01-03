@@ -15,3 +15,8 @@ class VMWriter:
         self.__write_code_lines([
             command
         ])
+
+    def write_call(self, func, arg_count):
+        self.__write_code_lines([
+            "call {} {}".format(func, arg_count)
+        ])
