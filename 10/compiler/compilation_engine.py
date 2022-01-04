@@ -45,6 +45,40 @@ class ComplilationEngine:
             self.compile_subroutine_dec(self.root)
         self.add_and_advance(self.root, TAG_SYMBOL, "}")
 
+    def output_class(self):
+        class_name = self.root[1].text
+        # TODO: class_var_dec
+        for subroutine_dec in self.root.findall("subroutineDec"):
+            self.output_subroutine_dec(subroutine_dec, class_name)
+        return
+
+    def output_subroutine_dec(self, subroutine_dec, class_name):
+        subroutine_name = subroutine_dec[2].text
+        # TODO: ローカル変数の個数を渡す（一旦0）
+        self.vm_writer.write_func(class_name, subroutine_name, 0)
+        # TODO: 引数の取得
+        self.output_subroutine_body(subroutine_dec.find("subroutineBody"))
+        return
+
+    def output_subroutine_body(self, subroutine_body):
+        # TODO: varDec*
+        self.output_statements(subroutine_body.find("statements"))
+        return
+
+    def output_statements(self, statements):
+        for statement in statements:
+            if statement.tag == "doStatement":
+                self.output_do(statement)
+            elif statement.tag == "returnStatement":
+                self.output_return(statement)
+            else:
+                raise Exception
+        return
+
+    def output_return(self, statement):
+        # TODO: 返り値
+        self.vm_writer.write_return()
+
     def get_type(self, root):
         if self.check_current_token() in ("int", "char", "boolean"):
             self.add_and_advance(root, TAG_KEYWORD)

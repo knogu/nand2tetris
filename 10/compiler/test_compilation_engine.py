@@ -1,6 +1,7 @@
 import unittest
 from compilation_engine import ComplilationEngine
 from jack_tokenizer import JackTokenizer
+from vm_writer import VMWriter
 import xml.etree.ElementTree as ET
 import subprocess
 import pathlib
@@ -143,7 +144,6 @@ class TestComplilationEngine(unittest.TestCase):
                 out_path = "/Users/noguchikoutarou/nand2tetris/projects/10/compiler/unit_tests/output_do/actual/out_{}.vm".format(i)
                 compiler = self.set_up_compiler(test["input"], out_path)
                 do_statement = compiler.compile_do(self.root)
-                # ET.dump(do_statement)
                 compiler.output_do(do_statement)
                 compiler.vm_writer.f.close()
                 self.check_vm(out_path, test["asserted_file"])
@@ -333,6 +333,21 @@ class TestComplilationEngine(unittest.TestCase):
                                                input_path[:-4] + "xml"
                                                ])
                 self.assertEqual(b'Comparison ended successfully\n', out)
+
+    def test_output_class(self):
+        dirs = [
+            "/Users/noguchikoutarou/nand2tetris/projects/11/Seven"
+        ]
+        for dirpath in dirs:
+            for i, file in enumerate(os.listdir(dirpath)):
+                if file[-4:] != "jack":
+                    continue
+                input_path = dirpath + "/" + file
+                tokenizer = JackTokenizer.construct_from_file(input_path)
+                output_path = dirpath + "/out" + str(i) + ".vm"
+                compiler = ComplilationEngine(tokenizer, output_path)
+                compiler.compile_class()
+                compiler.output_class()
 
 
 if __name__ == "__main__":

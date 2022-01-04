@@ -20,3 +20,13 @@ class VMWriter:
         self.__write_code_lines([
             "call {} {}".format(func, arg_count)
         ])
+
+    def write_return(self):
+        self.__write_code_lines([
+            "return"
+        ])
+
+    def write_func(self, class_name, func_name, arg_count):
+        self.__write_code_lines([
+            "function {}.{} {}".format(class_name, func_name, arg_count)
+        ])
