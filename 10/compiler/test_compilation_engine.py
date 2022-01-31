@@ -78,7 +78,7 @@ class TestComplilationEngine(unittest.TestCase):
         ]
         for i, test in enumerate(fixture):
             with self.subTest(input=test["input"], asserted_file=test["asserted_file"]):
-                out_path = "./unit_tests/output_expression/actual/out_{}.vm".format(i)
+                out_path = "/Users/noguchikoutarou/nand2tetris/projects/10/compiler/unit_tests/output_expression/actual/out_{}.vm".format(i)
                 compiler = self.set_up_compiler(test["input"], out_path)
                 exp = compiler.compile_expression(self.root)
                 compiler.output_expression(exp)
@@ -233,6 +233,20 @@ class TestComplilationEngine(unittest.TestCase):
                 compiler.compile_var_dec(self.root)
                 self.check_xml(compiler, "unit_tests/var_dec/actual/out_{}.xml".format(i), test["asserted_file"])
 
+    def test_output_var_dec(self):
+        fixture = [
+            # {"input": "var SquareGame game;", "asserted_file": "unit_tests/var_dec/asserted/simple.xml"},
+            {"input": "var int i, j;", "asserted_file": "unit_tests/output_var_dec/asserted/double_int.vm"},
+        ]
+        for i, test in enumerate(fixture):
+            with self.subTest(input=test["input"], asserted_file=test["asserted_file"]):
+                out_path = "/Users/noguchikoutarou/nand2tetris/projects/10/compiler/unit_tests/output_var_dec/actual/out_{}.vm".format(i)
+                compiler = self.set_up_compiler(test["input"], out_path)
+                var_dec = compiler.compile_var_dec(self.root)
+                compiler.output_var_dec(var_dec)
+                compiler.vm_writer.f.close()
+                self.check_vm(out_path, test["asserted_file"])
+
     def test_compile_subroutine_body(self):
         fixture = [
             {"input": '''{
@@ -336,7 +350,8 @@ class TestComplilationEngine(unittest.TestCase):
 
     def test_output_class(self):
         dirs = [
-            "/Users/noguchikoutarou/nand2tetris/projects/11/Seven"
+            "/Users/noguchikoutarou/nand2tetris/projects/11/Seven",
+            # "/Users/noguchikoutarou/nand2tetris/projects/11/ConvertToBin"
         ]
         for dirpath in dirs:
             for i, file in enumerate(os.listdir(dirpath)):

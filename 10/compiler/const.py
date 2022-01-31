@@ -15,5 +15,9 @@ THAT = "that"
 POINTER = "pointer"
 TEMP = "temp"
 
+# symbol type (for symbol table)
+FIELD = "field"
+VAR = "var"
+
 # 演算
 OP_COMMAND = {"+": "add", "*": "call Math.multiply 2"}

@@ -11,6 +11,11 @@ class VMWriter:
             "push {} {}".format(segment, index)
         ])
 
+    def write_pop(self, segment, index):
+        self.__write_code_lines([
+            "pop {} {}".format(segment, index)
+        ])
+
     def write_arithmetic(self, command):
         self.__write_code_lines([
             command

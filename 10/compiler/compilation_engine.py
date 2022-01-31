@@ -1,9 +1,10 @@
 import xml.etree.ElementTree as ET
 from const import OP, TAG_KEYWORD, TAG_SYMBOL, TAG_IDENTIFIER, TAG_INTEGER_CONST, TAG_STRING_CONST, CONSTANT,\
-    ARG, LOCAL, STATIC, THIS, THAT, POINTER, TEMP, OP_COMMAND
+    ARG, LOCAL, STATIC, THIS, THAT, POINTER, TEMP, OP_COMMAND, VAR
 import pathlib
 import fileinput
 from vm_writer import VMWriter
+from symbol_table import SymbolTable
 
 
 class ComplilationEngine:
@@ -11,6 +12,7 @@ class ComplilationEngine:
         self.tokenizer = tokenizer
         if vm_out_path:
             self.vm_writer = VMWriter(vm_out_path)
+            self.symbol_table = SymbolTable()
 
     def sub_with_text(self, parent, child_tag, child_text):
         child = ET.SubElement(parent, child_tag)
@@ -61,9 +63,20 @@ class ComplilationEngine:
         return
 
     def output_subroutine_body(self, subroutine_body):
-        # TODO: varDec*
+        var_dec_list = subroutine_body.find("varDec")
+        if var_dec_list:
+            for var_dec in var_dec_list:
+                self.output_var_dec(var_dec)
         self.output_statements(subroutine_body.find("statements"))
         return
+
+    def output_var_dec(self, var_dec):
+        type = var_dec[1]
+        for identifier in var_dec.findall("identifier"):
+            symbol = self.symbol_table.define(identifier.text, type, VAR)
+            # ローカル変数の初期化
+            self.vm_writer.write_push(CONSTANT, 0)
+            self.vm_writer.write_pop(LOCAL, symbol.number)
 
     def output_statements(self, statements):
         for statement in statements:
@@ -110,6 +123,7 @@ class ComplilationEngine:
             self.add_and_advance(var_dec, TAG_SYMBOL)
             self.add_and_advance(var_dec, TAG_IDENTIFIER)
         self.add_and_advance(var_dec, TAG_SYMBOL, ";")
+        return var_dec
 
     def compile_expression(self, parent):
         '''

@@ -1,5 +1,5 @@
-from JackTokenizer import JackTokenizer
-from CompilationEngine import ComplilationEngine
+from jack_tokenizer import JackTokenizer
+from compilation_engine import ComplilationEngine
 import sys
 
 path = sys.argv[1]
