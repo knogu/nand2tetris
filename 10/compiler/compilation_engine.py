@@ -8,11 +8,14 @@ from symbol_table import SymbolTable
 
 
 class ComplilationEngine:
-    def __init__(self, tokenizer, vm_out_path=None):
+    def __init__(self, tokenizer, vm_out_path=None, symbol_table=None):
         self.tokenizer = tokenizer
         if vm_out_path:
             self.vm_writer = VMWriter(vm_out_path)
-            self.symbol_table = SymbolTable()
+            if symbol_table:
+                self.symbol_table = symbol_table
+            else:
+                self.symbol_table = SymbolTable()
 
     def sub_with_text(self, parent, child_tag, child_text):
         child = ET.SubElement(parent, child_tag)
@@ -170,6 +173,14 @@ class ComplilationEngine:
         else:
             self.add_and_advance(term, TAG_IDENTIFIER)
 
+    # TODO: ElementTreeの機能でリプレイスできないか？
+    def bracket_is_included(self, parent: ET.Element):
+        for child in parent:
+            if child.text == "(" and child.tag == "symbol":
+                return True
+        return False
+
+    # termをpushするvmプログラムを出力
     def output_term(self, term: ET.Element):
         if len(term) == 1:
             if term[0].tag == TAG_INTEGER_CONST:
@@ -183,6 +194,9 @@ class ComplilationEngine:
         elif term[0].text in UNARY_OP:
             self.output_term(term[1])
             self.vm_writer.write_arithmetic(OP_COMMAND[term[0].text])
+        # サブルーチン呼び出し←→term[0]が"("でなく（↑でカバー済）、かつ"("が含まれている、とする
+        elif self.bracket_is_included(term):
+            self.output_subroutine_call(term)
         else:
             raise Exception
 
@@ -230,6 +244,26 @@ class ComplilationEngine:
         self.compile_expression_list(parent)
         self.add_and_advance(parent, TAG_SYMBOL, ")")
 
+    # subroutine_call要素は、仕様によりxmlタグとして出力することはない
+    # しかし、output_subroutine_callを呼ぶ上でsubroutine_call要素が存在したほうが実装しやすいので、呼ぶ前に作成する
+    # subroutine_callはdoとtermしか子要素として持たず、それらの場合のsubroutine_call要素の作成は容易
+    def output_subroutine_call(self, subroutine_call):
+        func_name = ""
+        for child in subroutine_call:
+            if child.text == "(":
+                break
+            func_name += child.text
+
+        # expression_list includes symbols
+        expression_list = subroutine_call.find("expressionList")
+        # 区切りのコンマに対しては何もしなくて良いはず
+        expressions = expression_list.findall("expression")
+        for expression in expressions:
+            self.output_expression(expression)
+
+        self.vm_writer.write_call(func_name, len(expressions))
+        return
+
     def compile_return(self, parent):
         return_statement = ET.SubElement(parent, "returnStatement")
         self.add_and_advance(return_statement, TAG_KEYWORD, "return")
@@ -244,21 +278,10 @@ class ComplilationEngine:
         self.add_and_advance(do_statement, TAG_SYMBOL, ";")
         return do_statement
 
-    def output_do(self, do_statement):
-        func_name = ""
-        for i in range(1, len(do_statement)):
-            if do_statement[i].text == "(":
-                break
-            func_name += do_statement[i].text
-
-        # expression_list includes symbols
-        expression_list = do_statement.find("expressionList")
-        # 区切りのコンマに対しては何もしなくて良いはず
-        expressions = expression_list.findall("expression")
-        for expression in expressions:
-            self.output_expression(expression)
-
-        self.vm_writer.write_call(func_name, len(expressions))
+    def output_do(self, do_statement: ET.Element):
+        do_statement.remove(do_statement[0])
+        do_statement.remove(do_statement[-1])
+        self.output_subroutine_call(do_statement)
 
     def compile_let(self, parent):
         let_statement = ET.SubElement(parent, "letStatement")
@@ -271,6 +294,15 @@ class ComplilationEngine:
         self.add_and_advance(let_statement, TAG_SYMBOL, "=")
         self.compile_expression(let_statement)
         self.add_and_advance(let_statement, TAG_SYMBOL, ";")
+        return let_statement
+
+    def output_let(self, let_statement):
+        # まずlet式の右辺をpush
+        assert let_statement[-2].tag == "expression"
+        self.output_expression(let_statement[-2])
+        assert let_statement[1].tag == TAG_IDENTIFIER
+        symbol = self.symbol_table.symbol(let_statement[1].text)
+        self.vm_writer.write_pop(symbol.segment(), symbol.number)
 
     def compile_statements(self, parent):
         statements = ET.SubElement(parent, "statements")

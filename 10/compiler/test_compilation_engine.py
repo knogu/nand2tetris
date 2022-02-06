@@ -1,7 +1,9 @@
 import unittest
 from compilation_engine import ComplilationEngine
 from jack_tokenizer import JackTokenizer
+from symbol_table import SymbolTable
 from vm_writer import VMWriter
+from const import *
 import xml.etree.ElementTree as ET
 import subprocess
 import pathlib
@@ -9,10 +11,10 @@ import os
 
 
 class TestComplilationEngine(unittest.TestCase):
-    def set_up_compiler(self, input, vm_out=None):
+    def set_up_compiler(self, input, vm_out=None, symbol_table=None):
         self.root = ET.Element("root")
         tokenizer = JackTokenizer(input)
-        compiler = ComplilationEngine(tokenizer, vm_out)
+        compiler = ComplilationEngine(tokenizer, vm_out, symbol_table)
         return compiler
 
     def check_xml(self, compiler, output_file, asserted_file):
@@ -160,6 +162,21 @@ class TestComplilationEngine(unittest.TestCase):
                 compiler = self.set_up_compiler(test["input"])
                 compiler.compile_let(self.root)
                 self.check_xml(compiler, "unit_tests/do/actual/out_{}.xml".format(i), test["asserted_file"])
+
+    def test_output_let(self):
+        fixture = [
+            {"input": "let value = Memory.peek(8000); ", "asserted_file": "unit_tests/output_let/asserted/peek_memory.vm"},
+        ]
+        for i, test in enumerate(fixture):
+            with self.subTest(input=test["input"], asserted_file=test["asserted_file"]):
+                out_path = "/Users/noguchikoutarou/nand2tetris/projects/10/compiler/unit_tests/output_let/actual/out_{}.vm".format(i)
+                symbol_table = SymbolTable()
+                symbol_table.define("value", "int", VAR)
+                compiler = self.set_up_compiler(test["input"], out_path, symbol_table)
+                do_statement = compiler.compile_let(self.root)
+                compiler.output_let(do_statement)
+                compiler.vm_writer.f.close()
+                self.check_vm(out_path, test["asserted_file"])
 
     def test_compile_statements(self):
         fixture = [
