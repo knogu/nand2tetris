@@ -123,7 +123,7 @@ class ComplilationEngine:
     def compile_var_dec(self, parent):
         var_dec = ET.SubElement(parent, "varDec")
         self.add_and_advance(var_dec, TAG_KEYWORD, "var")
-        self.get_type(var_dec)
+        self.add_type_and_advance(var_dec)
         self.add_and_advance(var_dec, TAG_IDENTIFIER)
         while self.check_current_token() == ",":
             self.add_and_advance(var_dec, TAG_SYMBOL)
