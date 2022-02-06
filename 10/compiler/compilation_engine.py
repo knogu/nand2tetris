@@ -1,6 +1,6 @@
 import xml.etree.ElementTree as ET
 from const import OP, TAG_KEYWORD, TAG_SYMBOL, TAG_IDENTIFIER, TAG_INTEGER_CONST, TAG_STRING_CONST, CONSTANT,\
-    ARG, LOCAL, STATIC, THIS, THAT, POINTER, TEMP, OP_COMMAND, VAR
+    ARG, LOCAL, STATIC, THIS, THAT, POINTER, TEMP, OP_COMMAND, VAR, UNARY_OP
 import pathlib
 import fileinput
 from vm_writer import VMWriter
@@ -70,6 +70,7 @@ class ComplilationEngine:
         self.output_statements(subroutine_body.find("statements"))
         return
 
+    # TODO: クラスのインスタンスの対応
     def output_var_dec(self, var_dec):
         type = var_dec[1]
         for identifier in var_dec.findall("identifier"):
@@ -179,6 +180,9 @@ class ComplilationEngine:
                 raise Exception
         elif term[0].text == "(":
             self.output_expression(term[1])
+        elif term[0].text in UNARY_OP:
+            self.output_term(term[1])
+            self.vm_writer.write_arithmetic(OP_COMMAND[term[0].text])
         else:
             raise Exception
 
@@ -247,11 +251,14 @@ class ComplilationEngine:
                 break
             func_name += do_statement[i].text
 
+        # expression_list includes symbols
         expression_list = do_statement.find("expressionList")
-        for expression in expression_list:
+        # 区切りのコンマに対しては何もしなくて良いはず
+        expressions = expression_list.findall("expression")
+        for expression in expressions:
             self.output_expression(expression)
 
-        self.vm_writer.write_call(func_name, len(expression_list))
+        self.vm_writer.write_call(func_name, len(expressions))
 
     def compile_let(self, parent):
         let_statement = ET.SubElement(parent, "letStatement")

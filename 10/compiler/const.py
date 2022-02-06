@@ -1,4 +1,5 @@
 OP = {"+", "-", "*", "/", "&", "|", "<", ">", "="}
+UNARY_OP = {"-", "~"}
 TAG_KEYWORD = "keyword"
 TAG_SYMBOL = "symbol"
 TAG_IDENTIFIER = "identifier"
@@ -20,4 +21,4 @@ FIELD = "field"
 VAR = "var"
 
 # 演算
-OP_COMMAND = {"+": "add", "*": "call Math.multiply 2"}
+OP_COMMAND = {"+": "add", "*": "call Math.multiply 2", "-": "neg", "~": "not"}

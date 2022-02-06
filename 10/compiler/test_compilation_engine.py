@@ -138,6 +138,7 @@ class TestComplilationEngine(unittest.TestCase):
     def test_output_do(self):
         fixture = [
             {"input": "do Output.printInt(1 + (2 * 3));", "asserted_file": "unit_tests/output_do/asserted/seven.vm"},
+            {"input": "do Main.fillMemory(8001, 16, -1);", "asserted_file": "unit_tests/output_do/asserted/fill_memory.vm"}
         ]
         for i, test in enumerate(fixture):
             with self.subTest(input=test["input"], asserted_file=test["asserted_file"]):
