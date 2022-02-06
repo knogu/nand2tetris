@@ -1,10 +1,20 @@
 class VMWriter:
     def __init__(self, path):
         self.f = open(path, mode='w')
+        # バッファが複数必要になったら変更
+        self.is_to_buffer = False
+        self.buffer_lines = []
 
     def __write_code_lines(self, code_lines):
-        self.f.write('\n'.join(code_lines))
-        self.f.write('\n')
+        if self.is_to_buffer:
+            for line in code_lines:
+                self.buffer_lines.append(line)
+        else:
+            self.f.write('\n'.join(code_lines))
+            self.f.write('\n')
+
+    def write_buffer(self):
+        self.__write_code_lines(self.buffer_lines)
 
     def write_push(self, segment, index):
         self.__write_code_lines([

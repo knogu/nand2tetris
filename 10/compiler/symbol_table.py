@@ -52,3 +52,8 @@ class SymbolTable():
             return self.class_table[name]
         else:
             raise Exception("name not defined")
+
+    def var_count(self, kind):
+        if kind not in (VAR, STATIC, ARG, FIELD):
+            raise Exception("kind must be var or static or arg or field")
+        return self.kind2next_index[kind]
