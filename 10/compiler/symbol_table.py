@@ -3,10 +3,11 @@ from const import *
 
 class Symbol():
     def __init__(self, name, type, kind, number):
+        if kind not in (VAR, STATIC, ARG, FIELD):
+            raise Exception("kind must be var or static or arg or field")
+        self.kind = kind
         self.name = name
         self.type = type
-        # static or field or arg or var
-        self.kind = kind
         self.number = number
 
     def segment(self):

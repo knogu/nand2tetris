@@ -8,7 +8,7 @@ from symbol_table import SymbolTable
 
 
 class ComplilationEngine:
-    def __init__(self, tokenizer, vm_out_path=None, symbol_table=None):
+    def __init__(self, tokenizer, vm_out_path=None, symbol_table: SymbolTable=None):
         self.tokenizer = tokenizer
         if vm_out_path:
             self.vm_writer = VMWriter(vm_out_path)
@@ -98,7 +98,7 @@ class ComplilationEngine:
         # TODO: 返り値
         self.vm_writer.write_return()
 
-    def get_type(self, root):
+    def add_type_and_advance(self, root):
         if self.check_current_token() in ("int", "char", "boolean"):
             self.add_and_advance(root, TAG_KEYWORD)
         else:
@@ -112,7 +112,7 @@ class ComplilationEngine:
         assert self.check_current_token() in ("static", "field")
         class_var_dec = ET.SubElement(root, "classVarDec")
         self.add_and_advance(class_var_dec, TAG_KEYWORD)
-        self.get_type(class_var_dec)
+        self.add_type_and_advance(class_var_dec)
         self.add_and_advance(class_var_dec, TAG_IDENTIFIER)
         while self.tokenizer.token == ",":
             self.add_and_advance(class_var_dec, TAG_SYMBOL)
@@ -123,7 +123,7 @@ class ComplilationEngine:
     def compile_var_dec(self, parent):
         var_dec = ET.SubElement(parent, "varDec")
         self.add_and_advance(var_dec, TAG_KEYWORD, "var")
-        self.get_type(var_dec)
+        self.add_type_and_advance(var_dec)
         self.add_and_advance(var_dec, TAG_IDENTIFIER)
         while self.check_current_token() == ",":
             self.add_and_advance(var_dec, TAG_SYMBOL)
@@ -362,7 +362,7 @@ class ComplilationEngine:
         if self.check_current_token() == ")":
             return
         while True:
-            self.get_type(parameter_list)
+            self.add_type_and_advance(parameter_list)
             self.add_and_advance(parameter_list, TAG_IDENTIFIER)
             if self.check_current_token() != ",":
                 break
@@ -375,7 +375,7 @@ class ComplilationEngine:
         if self.check_current_token() == "void":
             self.add_and_advance(subroutine_dec, TAG_KEYWORD)
         else:
-            self.get_type(subroutine_dec)
+            self.add_type_and_advance(subroutine_dec)
         self.add_and_advance(subroutine_dec, TAG_IDENTIFIER)
         self.add_and_advance(subroutine_dec, TAG_SYMBOL, "(")
         self.compile_parameter_list(subroutine_dec)
