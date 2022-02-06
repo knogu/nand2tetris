@@ -59,10 +59,11 @@ class ComplilationEngine:
 
     def output_subroutine_dec(self, subroutine_dec, class_name):
         subroutine_name = subroutine_dec[2].text
-        # TODO: ローカル変数の個数を渡す（一旦0）
-        self.vm_writer.write_func(class_name, subroutine_name, 0)
-        # TODO: 引数の取得
+        self.vm_writer.is_to_buffer = True
         self.output_subroutine_body(subroutine_dec.find("subroutineBody"))
+        self.vm_writer.is_to_buffer = False
+        self.vm_writer.write_func(class_name, subroutine_name, self.symbol_table.var_count(VAR))
+        self.vm_writer.write_buffer()
         return
 
     def output_subroutine_body(self, subroutine_body):
