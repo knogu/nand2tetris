@@ -66,7 +66,7 @@ class ComplilationEngine:
         return
 
     def output_subroutine_body(self, subroutine_body):
-        var_dec_list = subroutine_body.find("varDec")
+        var_dec_list = subroutine_body.findall("varDec")
         if var_dec_list:
             for var_dec in var_dec_list:
                 self.output_var_dec(var_dec)
@@ -88,6 +88,8 @@ class ComplilationEngine:
                 self.output_do(statement)
             elif statement.tag == "returnStatement":
                 self.output_return(statement)
+            elif statement.tag == "letStatement":
+                self.output_let(statement)
             else:
                 raise Exception
         return
@@ -185,8 +187,9 @@ class ComplilationEngine:
         if len(term) == 1:
             if term[0].tag == TAG_INTEGER_CONST:
                 self.vm_writer.write_push(CONSTANT, int(term[0].text))
-            # elif term[0].tag == TAG_IDENTIFIER:
-            #     self.vm_writer.write_push(, int(term[0].text))
+            elif term[0].tag == TAG_IDENTIFIER:
+                symbol = self.symbol_table.symbol(term[0].text)
+                self.vm_writer.write_push(symbol.segment(), symbol.number)
             else:
                 raise Exception
         elif term[0].text == "(":

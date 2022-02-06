@@ -369,7 +369,7 @@ class TestComplilationEngine(unittest.TestCase):
     def test_output_class(self):
         dirs = [
             "/Users/noguchikoutarou/nand2tetris/projects/11/Seven",
-            # "/Users/noguchikoutarou/nand2tetris/projects/11/ConvertToBin"
+            "/Users/noguchikoutarou/nand2tetris/projects/11/ConvertToBin"
         ]
         for dirpath in dirs:
             for i, file in enumerate(os.listdir(dirpath)):

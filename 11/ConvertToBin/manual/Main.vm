@@ -17,109 +17,109 @@ push local 0
 call Main.convert 1
 return
 
-function Main.fillMemory 0
-label LOOP
-push argument 1
-push constant 0
-eq
-if-goto END
-// Whileの中の処理
-// set arg and call Memory.poke
-push argument 0
-push argument 2
-call Memory.poke 2
-// length--;
-push argument 1
-push constant 1
-sub
-pop argument 1
-// startAddress++;
-push argument 0
-push constant 1
-add
-pop argument 0
-goto LOOP
-// while抜けたら終了処理
-label END
-return
-
-function Main.convert 3
-// init mask(int)
-push constant 0
-pop local 0
-// init position(int)
-push constant 0
-pop local 1
-// init loop(boolean)
-push constant 0
-pop local 2
-// let loop = true
-push constant 0
-not
-pop local 2
-// while
-label LOOP
-push local 2
-not
-if-goto END
-// let position = position + 1;
-push local 1
-push constant 1
-add
-pop local 1
-// let mask = Main.nextMask(mask);
-push local 0
-call Main.nextMask 1
-pop local 0
-// if (~(position > 16))
-push local 1
-push constant 16
-gt
-not
-not
-if-goto NEG_LOOP
-// if (~((value & mask) = 0))
-push argument 0
-push local 0
-and
-push constant 0
-eq
-not
-not
-if-goto BIT_ZERO
-// do Memory.poke(8000 + position, 1);
-push constant 8000
-push local 1
-add
-push constant 1
-call Memory.poke 2
-goto BIT_END
-label BIT_ZERO
-push constant 8000
-push local 1
-add
-push constant 0
-call Memory.poke 2
-label BIT_END
-goto END_ONELOOP
-label NEG_LOOP
-push constant 0
-pop local 2
-label END_ONELOOP
-goto LOOP
-label END
-return
-
-function Main.nextMask 0
-push argument 0
-push constant 0
-eq
-not
-if-goto TIMES2
-push constant 1
-return
-label TIMES2
-push argument 0
-push constant 2
-call Math.multiply 2
-return
+//function Main.fillMemory 0
+//label LOOP
+//push argument 1
+//push constant 0
+//eq
+//if-goto END
+//// Whileの中の処理
+//// set arg and call Memory.poke
+//push argument 0
+//push argument 2
+//call Memory.poke 2
+//// length--;
+//push argument 1
+//push constant 1
+//sub
+//pop argument 1
+//// startAddress++;
+//push argument 0
+//push constant 1
+//add
+//pop argument 0
+//goto LOOP
+//// while抜けたら終了処理
+//label END
+//return
+//
+//function Main.convert 3
+//// init mask(int)
+//push constant 0
+//pop local 0
+//// init position(int)
+//push constant 0
+//pop local 1
+//// init loop(boolean)
+//push constant 0
+//pop local 2
+//// let loop = true
+//push constant 0
+//not
+//pop local 2
+//// while
+//label LOOP
+//push local 2
+//not
+//if-goto END
+//// let position = position + 1;
+//push local 1
+//push constant 1
+//add
+//pop local 1
+//// let mask = Main.nextMask(mask);
+//push local 0
+//call Main.nextMask 1
+//pop local 0
+//// if (~(position > 16))
+//push local 1
+//push constant 16
+//gt
+//not
+//not
+//if-goto NEG_LOOP
+//// if (~((value & mask) = 0))
+//push argument 0
+//push local 0
+//and
+//push constant 0
+//eq
+//not
+//not
+//if-goto BIT_ZERO
+//// do Memory.poke(8000 + position, 1);
+//push constant 8000
+//push local 1
+//add
+//push constant 1
+//call Memory.poke 2
+//goto BIT_END
+//label BIT_ZERO
+//push constant 8000
+//push local 1
+//add
+//push constant 0
+//call Memory.poke 2
+//label BIT_END
+//goto END_ONELOOP
+//label NEG_LOOP
+//push constant 0
+//pop local 2
+//label END_ONELOOP
+//goto LOOP
+//label END
+//return
+//
+//function Main.nextMask 0
+//push argument 0
+//push constant 0
+//eq
+//not
+//if-goto TIMES2
+//push constant 1
+//return
+//label TIMES2
+//push argument 0
+//push constant 2
+//call Math.multiply 2
+//return
