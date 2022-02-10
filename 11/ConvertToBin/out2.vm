@@ -12,3 +12,16 @@ pop local 0
 push local 0
 call Main.convert 1
 return
+function Main.nextMask 0
+push argument 0
+push constant 0
+eq
+not
+if-goto LABEL0
+push constant 1
+return
+label LABEL0
+push argument 0
+push constant 2
+call Math.multiply 2
+return

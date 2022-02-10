@@ -13,7 +13,9 @@ class Symbol():
     def segment(self):
         if self.kind == VAR:
             return LOCAL
-        elif self.kind == ARG or self.kind == STATIC:
+        elif self.kind == ARG:
+            return "argument"
+        elif self.kind == STATIC:
             return self.kind
         else:
             raise Exception
@@ -57,3 +59,10 @@ class SymbolTable():
         if kind not in (VAR, STATIC, ARG, FIELD):
             raise Exception("kind must be var or static or arg or field")
         return self.kind2next_index[kind]
+
+    def start_subroutine(self):
+        self.routine_table = {}
+        self.kind2next_index = {}
+        for kind in (ARG, VAR):
+            self.kind2next_index[kind] = 0
+        return

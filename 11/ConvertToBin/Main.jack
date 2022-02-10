@@ -60,14 +60,14 @@ class Main {
     // }
  
     /** Returns the next mask (the mask that should follow the given mask). */
-    // function int nextMask(int mask) {
-    // 	if (mask = 0) {
-    // 	    return 1;
-    // 	}
-    // 	else {
-	//     return mask * 2;
-    // 	}
-    // }
+    function int nextMask(int mask) {
+    	if (mask = 0) {
+    	    return 1;
+    	}
+    	else {
+	    return mask * 2;
+    	}
+    }
     
     // /** Fills 'length' consecutive memory locations with 'value',
     //   * starting at 'startAddress'. */

@@ -109,17 +109,17 @@ return
 //goto LOOP
 //label END
 //return
-//
-//function Main.nextMask 0
-//push argument 0
-//push constant 0
-//eq
-//not
-//if-goto TIMES2
-//push constant 1
-//return
-//label TIMES2
-//push argument 0
-//push constant 2
-//call Math.multiply 2
-//return
+
+function Main.nextMask 0
+push argument 0
+push constant 0
+eq
+not
+if-goto TIMES2
+push constant 1
+return
+label TIMES2
+push argument 0
+push constant 2
+call Math.multiply 2
+return

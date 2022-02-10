@@ -6,15 +6,19 @@ class VMWriter:
         self.buffer_lines = []
 
     def __write_code_lines(self, code_lines):
+        for line in code_lines:
+            self.write_one_line(line)
+
+    def write_one_line(self, line):
         if self.is_to_buffer:
-            for line in code_lines:
-                self.buffer_lines.append(line)
+            self.buffer_lines.append(line)
         else:
-            self.f.write('\n'.join(code_lines))
+            self.f.write(line)
             self.f.write('\n')
 
-    def write_buffer(self):
+    def write_and_clear_buffer(self):
         self.__write_code_lines(self.buffer_lines)
+        self.buffer_lines = []
 
     def write_push(self, segment, index):
         self.__write_code_lines([
@@ -44,4 +48,14 @@ class VMWriter:
     def write_func(self, class_name, func_name, arg_count):
         self.__write_code_lines([
             "function {}.{} {}".format(class_name, func_name, arg_count)
+        ])
+
+    def write_if(self, target_label):
+        self.__write_code_lines([
+            "if-goto {}".format(target_label)
+        ])
+
+    def write_label(self, label_name):
+        self.__write_code_lines([
+            "label {}".format(label_name)
         ])

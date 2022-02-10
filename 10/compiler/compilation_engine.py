@@ -16,6 +16,7 @@ class ComplilationEngine:
                 self.symbol_table = symbol_table
             else:
                 self.symbol_table = SymbolTable()
+        self.label_idx = 0
 
     def sub_with_text(self, parent, child_tag, child_text):
         child = ET.SubElement(parent, child_tag)
@@ -58,12 +59,20 @@ class ComplilationEngine:
         return
 
     def output_subroutine_dec(self, subroutine_dec, class_name):
+        self.symbol_table.start_subroutine()
+        # 引数をシンボルテーブルに登録
+        parameter_list = subroutine_dec.find("parameterList")
+        parameter_index = 0
+        while parameter_index + 1 < len(parameter_list):
+            type_, name = parameter_list[parameter_index].text, parameter_list[parameter_index + 1].text
+            self.symbol_table.define(name, type_, ARG)
+            parameter_index += 3
         subroutine_name = subroutine_dec[2].text
         self.vm_writer.is_to_buffer = True
         self.output_subroutine_body(subroutine_dec.find("subroutineBody"))
         self.vm_writer.is_to_buffer = False
         self.vm_writer.write_func(class_name, subroutine_name, self.symbol_table.var_count(VAR))
-        self.vm_writer.write_buffer()
+        self.vm_writer.write_and_clear_buffer()
         return
 
     def output_subroutine_body(self, subroutine_body):
@@ -91,12 +100,33 @@ class ComplilationEngine:
                 self.output_return(statement)
             elif statement.tag == "letStatement":
                 self.output_let(statement)
+            elif statement.tag == "ifStatement":
+                self.output_if(statement)
             else:
                 raise Exception
         return
 
-    def output_return(self, statement):
-        # TODO: 返り値
+    def issue_label(self):
+        ret = "LABEL{}".format(self.label_idx)
+        self.label_idx += 1
+        return ret
+
+    def output_if(self, if_statement):
+        self.output_expression(if_statement[2])
+        self.vm_writer.write_one_line("not")
+        label_else = self.issue_label()
+        self.vm_writer.write_if(label_else)
+        stmts_ls = if_statement.findall("statements")
+        self.output_statements(stmts_ls[0])
+        self.vm_writer.write_label(label_else)
+        if len(stmts_ls) == 2:
+            self.output_statements(stmts_ls[1])
+        return
+
+    def output_return(self, return_stmt):
+        returned_exp = return_stmt.find("expression")
+        if returned_exp:
+            self.output_expression(returned_exp)
         self.vm_writer.write_return()
 
     def add_type_and_advance(self, root):
