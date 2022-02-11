@@ -55,6 +55,11 @@ class VMWriter:
             "if-goto {}".format(target_label)
         ])
 
+    def write_goto(self, target_label):
+        self.__write_code_lines([
+            "goto {}".format(target_label)
+        ])
+
     def write_label(self, label_name):
         self.__write_code_lines([
             "label {}".format(label_name)

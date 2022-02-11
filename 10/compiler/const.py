@@ -21,4 +21,5 @@ FIELD = "field"
 VAR = "var"
 
 # 演算
-OP_COMMAND = {"+": "add", "*": "call Math.multiply 2", "-": "neg", "~": "not", "=": "eq"}
+OP_COMMAND = {"+": "add", "*": "call Math.multiply 2", "-": "sub", "~": "not", "=": "eq", ">": "gt"}
+UNARY_OP_COMMAND = {"-": "neg", "~": "not"}

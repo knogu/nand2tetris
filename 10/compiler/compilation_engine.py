@@ -1,6 +1,6 @@
 import xml.etree.ElementTree as ET
 from const import OP, TAG_KEYWORD, TAG_SYMBOL, TAG_IDENTIFIER, TAG_INTEGER_CONST, TAG_STRING_CONST, CONSTANT,\
-    ARG, LOCAL, STATIC, THIS, THAT, POINTER, TEMP, OP_COMMAND, VAR, UNARY_OP
+    ARG, LOCAL, STATIC, THIS, THAT, POINTER, TEMP, OP_COMMAND, VAR, UNARY_OP, UNARY_OP_COMMAND
 import pathlib
 import fileinput
 from vm_writer import VMWriter
@@ -102,9 +102,23 @@ class ComplilationEngine:
                 self.output_let(statement)
             elif statement.tag == "ifStatement":
                 self.output_if(statement)
+            elif statement.tag == "whileStatement":
+                self.output_while(statement)
             else:
                 raise Exception
         return
+
+    def output_while(self, while_st):
+        cond = while_st.find("expression")
+        label_before_cond = self.issue_label()
+        self.vm_writer.write_label(label_before_cond)
+        self.output_expression(cond)
+        label_after_while = self.issue_label()
+        self.vm_writer.write_one_line("not")
+        self.vm_writer.write_if(label_after_while)
+        self.output_statements(while_st.find("statements"))
+        self.vm_writer.write_goto(label_before_cond)
+        self.vm_writer.write_label(label_after_while)
 
     def issue_label(self):
         ret = "LABEL{}".format(self.label_idx)
@@ -227,7 +241,7 @@ class ComplilationEngine:
             self.output_expression(term[1])
         elif term[0].text in UNARY_OP:
             self.output_term(term[1])
-            self.vm_writer.write_arithmetic(OP_COMMAND[term[0].text])
+            self.vm_writer.write_arithmetic(UNARY_OP_COMMAND[term[0].text])
         # サブルーチン呼び出し←→term[0]が"("でなく（↑でカバー済）、かつ"("が含まれている、とする
         elif self.bracket_is_included(term):
             self.output_subroutine_call(term)
