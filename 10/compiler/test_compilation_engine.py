@@ -2,7 +2,6 @@ import unittest
 from compilation_engine import ComplilationEngine
 from jack_tokenizer import JackTokenizer
 from symbol_table import SymbolTable
-from vm_writer import VMWriter
 from const import *
 import xml.etree.ElementTree as ET
 import subprocess

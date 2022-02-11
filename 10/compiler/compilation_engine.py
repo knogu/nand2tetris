@@ -1,4 +1,3 @@
-from pickle import TRUE
 import xml.etree.ElementTree as ET
 from const import OP, TAG_KEYWORD, TAG_SYMBOL, TAG_IDENTIFIER, TAG_INTEGER_CONST, TAG_STRING_CONST, CONSTANT,\
     ARG, LOCAL, STATIC, THIS, THAT, POINTER, TEMP, OP_COMMAND, VAR, UNARY_OP, UNARY_OP_COMMAND
@@ -9,7 +8,7 @@ from symbol_table import SymbolTable
 
 
 class ComplilationEngine:
-    def __init__(self, tokenizer, vm_out_path=None, symbol_table: SymbolTable=None):
+    def __init__(self, tokenizer, vm_out_path=None, symbol_table: SymbolTable = None):
         self.tokenizer = tokenizer
         if vm_out_path:
             self.vm_writer = VMWriter(vm_out_path)
