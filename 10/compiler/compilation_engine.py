@@ -1,3 +1,4 @@
+from pickle import TRUE
 import xml.etree.ElementTree as ET
 from const import OP, TAG_KEYWORD, TAG_SYMBOL, TAG_IDENTIFIER, TAG_INTEGER_CONST, TAG_STRING_CONST, CONSTANT,\
     ARG, LOCAL, STATIC, THIS, THAT, POINTER, TEMP, OP_COMMAND, VAR, UNARY_OP, UNARY_OP_COMMAND
@@ -129,12 +130,15 @@ class ComplilationEngine:
         self.output_expression(if_statement[2])
         self.vm_writer.write_one_line("not")
         label_else = self.issue_label()
+        label_after_else = self.issue_label()
         self.vm_writer.write_if(label_else)
         stmts_ls = if_statement.findall("statements")
         self.output_statements(stmts_ls[0])
+        self.vm_writer.write_goto(label_after_else)
         self.vm_writer.write_label(label_else)
         if len(stmts_ls) == 2:
             self.output_statements(stmts_ls[1])
+        self.vm_writer.write_label(label_after_else)
         return
 
     def output_return(self, return_stmt):
@@ -235,6 +239,11 @@ class ComplilationEngine:
             elif term[0].tag == TAG_IDENTIFIER:
                 symbol = self.symbol_table.symbol(term[0].text)
                 self.vm_writer.write_push(symbol.segment(), symbol.number)
+            elif term[0].text == "true":
+                self.vm_writer.write_push(CONSTANT, 0)
+                self.vm_writer.write_one_line("not")
+            elif term[0].text == "false":
+                self.vm_writer.write_push(CONSTANT, 0)
             else:
                 raise Exception
         elif term[0].text == "(":

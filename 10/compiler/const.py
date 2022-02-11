@@ -5,6 +5,7 @@ TAG_SYMBOL = "symbol"
 TAG_IDENTIFIER = "identifier"
 TAG_INTEGER_CONST = "integerConstant"
 TAG_STRING_CONST = "stringConstant"
+# KEYWORDS_VM = {"true": "-1", "false": "0"}
 
 # memory segment
 CONSTANT = "constant"
@@ -21,5 +22,5 @@ FIELD = "field"
 VAR = "var"
 
 # 演算
-OP_COMMAND = {"+": "add", "*": "call Math.multiply 2", "-": "sub", "~": "not", "=": "eq", ">": "gt"}
+OP_COMMAND = {"+": "add", "*": "call Math.multiply 2", "-": "sub", "~": "not", "=": "eq", ">": "gt", "<": "lt", "&": "and", "|": "or"}
 UNARY_OP_COMMAND = {"-": "neg", "~": "not"}
