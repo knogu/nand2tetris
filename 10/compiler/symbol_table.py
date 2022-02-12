@@ -66,3 +66,6 @@ class SymbolTable():
         for kind in (ARG, VAR):
             self.kind2next_index[kind] = 0
         return
+
+    def is_in_subroutine_table(self, name):
+        return name in self.routine_table

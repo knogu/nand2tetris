@@ -368,18 +368,20 @@ class TestComplilationEngine(unittest.TestCase):
     def test_output_class(self):
         dirs = [
             "/Users/noguchikoutarou/nand2tetris/projects/11/Seven",
-            "/Users/noguchikoutarou/nand2tetris/projects/11/ConvertToBin"
+            "/Users/noguchikoutarou/nand2tetris/projects/11/ConvertToBin",
+            "/Users/noguchikoutarou/nand2tetris/projects/11/Square"
         ]
         for dirpath in dirs:
             for i, file in enumerate(os.listdir(dirpath)):
                 if file[-4:] != "jack":
                     continue
-                input_path = dirpath + "/" + file
-                tokenizer = JackTokenizer.construct_from_file(input_path)
-                output_path = dirpath + "/out" + str(i) + ".vm"
-                compiler = ComplilationEngine(tokenizer, output_path)
-                compiler.compile_class()
-                compiler.output_class()
+                with self.subTest(dir=dirpath, file=file):
+                    input_path = dirpath + "/" + file
+                    tokenizer = JackTokenizer.construct_from_file(input_path)
+                    output_path = dirpath + "/out" + str(i) + ".vm"
+                    compiler = ComplilationEngine(tokenizer, output_path)
+                    compiler.compile_class()
+                    compiler.output_class()
 
 
 if __name__ == "__main__":

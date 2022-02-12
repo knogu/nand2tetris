@@ -83,11 +83,14 @@ class ComplilationEngine:
         self.output_statements(subroutine_body.find("statements"))
         return
 
-    # TODO: クラスのインスタンスの対応
     def output_var_dec(self, var_dec):
         type = var_dec[1]
-        for identifier in var_dec.findall("identifier"):
-            symbol = self.symbol_table.define(identifier.text, type, VAR)
+        defined_vars = var_dec.findall("identifier")
+        # クラスのインスタンスの場合、クラス名もfindall("identifier")に含まれてしまうため
+        if type.tag == TAG_IDENTIFIER:
+            defined_vars = defined_vars[1:]
+        for identifier in defined_vars:
+            symbol = self.symbol_table.define(identifier.text, type.text, VAR)
             # ローカル変数の初期化
             self.vm_writer.write_push(CONSTANT, 0)
             self.vm_writer.write_pop(LOCAL, symbol.number)
@@ -304,12 +307,24 @@ class ComplilationEngine:
     # しかし、output_subroutine_callを呼ぶ上でsubroutine_call要素が存在したほうが実装しやすいので、呼ぶ前に作成する
     # subroutine_callはdoとtermしか子要素として持たず、それらの場合のsubroutine_call要素の作成は容易
     def output_subroutine_call(self, subroutine_call):
-        func_name = ""
-        for child in subroutine_call:
-            if child.text == "(":
-                break
-            func_name += child.text
+        identifiers = subroutine_call.findall(TAG_IDENTIFIER)
+        is_method = False
+        if subroutine_call.find(TAG_SYMBOL).text == ".":
+            if self.symbol_table.is_in_subroutine_table(identifiers[0].text):
+                class_name = self.symbol_table.symbol(identifiers[0].text).type
+                instance_symbol = self.symbol_table.symbol(identifiers[0].text)
+                is_method = True
+            else:
+                class_name = identifiers[0].text
+            routine_name = identifiers[1].text
+        else:
+            class_name = ""
+            routine_name = identifiers[0].text
+        func_name = class_name + "." + routine_name
 
+        # インスタンスメソッドの場合は、インスタンスを第一引数としてpush
+        if is_method:
+            self.vm_writer.write_push(instance_symbol.segment(), instance_symbol.number)
         # expression_list includes symbols
         expression_list = subroutine_call.find("expressionList")
         # 区切りのコンマに対しては何もしなくて良いはず
@@ -317,7 +332,7 @@ class ComplilationEngine:
         for expression in expressions:
             self.output_expression(expression)
 
-        self.vm_writer.write_call(func_name, len(expressions))
+        self.vm_writer.write_call(func_name, len(expressions) + is_method)
         return
 
     def compile_return(self, parent):
