@@ -378,7 +378,8 @@ class TestComplilationEngine(unittest.TestCase):
                 with self.subTest(dir=dirpath, file=file):
                     input_path = dirpath + "/" + file
                     tokenizer = JackTokenizer.construct_from_file(input_path)
-                    output_path = dirpath + "/out" + str(i) + ".vm"
+                    output_path = dirpath + "/" + file[:-5] + ".vm"
+                    print("out_path: ", output_path)
                     compiler = ComplilationEngine(tokenizer, output_path)
                     compiler.compile_class()
                     compiler.output_class()
